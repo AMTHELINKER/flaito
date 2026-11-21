@@ -32,7 +32,11 @@ Pour viser une autre API en développement : `VITE_API_PROXY=http://hote:port pn
 | `pnpm icons`                                 | régénère les icônes PWA                             |
 | `pnpm shared:sync` / `pnpm shared:check`     | récupère / contrôle `src/shared` depuis blaito      |
 
-## Production
+## Mise en ligne gratuite
+
+En production gratuite, la PWA est servie par le service Render de l'API (même domaine : cookies et WebSocket « first-party », y compris sur iPhone). Chaque push vert sur `main` déclenche un redéploiement si le secret `RENDER_DEPLOY_HOOK_URL` est défini. Guide complet : `docs/DEPLOIEMENT.md` dans le dépôt [blaito](https://github.com/AMTHELINKER/blaito/blob/main/docs/DEPLOIEMENT.md).
+
+## Production (image dédiée)
 
 L'image Docker sert la PWA avec nginx et relaie `/api` et `/uploads` vers l'API :
 

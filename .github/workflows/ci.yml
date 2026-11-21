@@ -68,3 +68,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t laito-web .
+
+  # Le front est servi par le service Render de l'API : on le redéploie après un push vert.
+  deploy:
+    name: Redéployer sur Render
+    needs: [quality, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déclencher le deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "Secret RENDER_DEPLOY_HOOK_URL absent : déploiement ignoré (voir docs/DEPLOIEMENT.md de blaito)."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" > /dev/null && echo "Redéploiement demandé."
