@@ -26,7 +26,11 @@ describe('useAutosave', () => {
   it('sauvegarde localement à chaque frappe', () => {
     const onLocalChange = vi.fn();
     const { result } = renderHook(() =>
-      useAutosave({ save: vi.fn().mockResolvedValue(undefined), onLocalChange, isOnline: () => true }),
+      useAutosave({
+        save: vi.fn().mockResolvedValue(undefined),
+        onLocalChange,
+        isOnline: () => true,
+      }),
     );
     act(() => result.current.change('x'));
     expect(onLocalChange).toHaveBeenCalledWith('x');

@@ -29,7 +29,9 @@ describe('api client', () => {
         return json(200, { accessToken: 'new', user: { id: 'u' } });
       }
       const auth = (init.headers as Headers).get('Authorization');
-      return auth === 'Bearer new' ? json(200, { url }) : json(401, { statusCode: 401, message: 'Unauthorized' });
+      return auth === 'Bearer new'
+        ? json(200, { url })
+        : json(401, { statusCode: 401, message: 'Unauthorized' });
     });
     const [a, b] = await Promise.all([
       api<{ url: string }>('/books/mine', { fetchImpl: fetchImpl as unknown as typeof fetch }),
@@ -44,8 +46,12 @@ describe('api client', () => {
   it('propage une erreur lisible et le code machine', async () => {
     const fetchImpl = vi
       .fn()
-      .mockResolvedValue(json(403, { statusCode: 403, message: 'EMAIL_NOT_VERIFIED', error: 'Forbidden' }));
-    const err = (await api('/auth/login', { method: 'POST', body: {}, fetchImpl }).catch((e: unknown) => e)) as ApiRequestError;
+      .mockResolvedValue(
+        json(403, { statusCode: 403, message: 'EMAIL_NOT_VERIFIED', error: 'Forbidden' }),
+      );
+    const err = (await api('/auth/login', { method: 'POST', body: {}, fetchImpl }).catch(
+      (e: unknown) => e,
+    )) as ApiRequestError;
     expect(err).toBeInstanceOf(ApiRequestError);
     expect(err.status).toBe(403);
     expect(err.code).toBe('EMAIL_NOT_VERIFIED');

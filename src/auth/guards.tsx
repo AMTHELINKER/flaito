@@ -6,7 +6,11 @@ import { Logo } from '@/components/Logo';
 
 export function SplashScreen() {
   return (
-    <div className="flex min-h-dvh items-center justify-center" aria-busy="true" aria-label="Chargement de Laito">
+    <div
+      className="flex min-h-dvh items-center justify-center"
+      aria-busy="true"
+      aria-label="Chargement de Laito"
+    >
       <div className="animate-pulse">
         <Logo />
       </div>
@@ -19,9 +23,15 @@ export function RequireAuth() {
   const location = useLocation();
   if (status === 'loading') return <SplashScreen />;
   if (status === 'anonymous') {
-    if (location.pathname === '/' && !readLocal(ONBOARDED_KEY, false)) return <Navigate to="/bienvenue" replace />;
+    if (location.pathname === '/' && !readLocal(ONBOARDED_KEY, false))
+      return <Navigate to="/bienvenue" replace />;
     const next = location.pathname + location.search;
-    return <Navigate to={next === '/' ? '/connexion' : `/connexion?next=${encodeURIComponent(next)}`} replace />;
+    return (
+      <Navigate
+        to={next === '/' ? '/connexion' : `/connexion?next=${encodeURIComponent(next)}`}
+        replace
+      />
+    );
   }
   return <Outlet />;
 }

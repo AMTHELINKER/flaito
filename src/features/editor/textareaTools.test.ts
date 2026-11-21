@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { centerEdit, linePrefixEdit, sceneBreakEdit, wrapEdit } from './textareaTools';
 
-const apply = (v: string, e: { start: number; end: number; text: string }) => v.slice(0, e.start) + e.text + v.slice(e.end);
+const apply = (v: string, e: { start: number; end: number; text: string }) =>
+  v.slice(0, e.start) + e.text + v.slice(e.end);
 
 describe('textareaTools', () => {
   it('met en gras et bascule', () => {

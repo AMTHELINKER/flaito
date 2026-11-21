@@ -25,7 +25,15 @@ export function ChapterText({ content, dropCap = true }: { content: string; drop
   );
 }
 
-function BlockView({ block: b, index, dropCap }: { block: Block; index: number; dropCap: boolean }) {
+function BlockView({
+  block: b,
+  index,
+  dropCap,
+}: {
+  block: Block;
+  index: number;
+  dropCap: boolean;
+}) {
   const common = { 'data-block': index };
   switch (b.type) {
     case 'scene-break':
@@ -35,7 +43,7 @@ function BlockView({ block: b, index, dropCap }: { block: Block; index: number; 
         </p>
       );
     case 'heading': {
-      const H = (`h${b.level + 1}` as 'h2' | 'h3' | 'h4');
+      const H = `h${b.level + 1}` as 'h2' | 'h3' | 'h4';
       return (
         <H {...common} style={{ textAlign: b.align }}>
           {renderInline(b.children)}

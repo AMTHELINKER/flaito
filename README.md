@@ -25,12 +25,12 @@ Pour viser une autre API en développement : `VITE_API_PROXY=http://hote:port pn
 
 ## Commandes
 
-| Commande | Effet |
-|---|---|
-| `pnpm lint` / `pnpm typecheck` / `pnpm test` | qualité et tests (Vitest) |
-| `pnpm build` / `pnpm preview` | build de production (PWA, service worker) et aperçu |
-| `pnpm icons` | régénère les icônes PWA |
-| `pnpm shared:sync` / `pnpm shared:check` | récupère / contrôle `src/shared` depuis blaito |
+| Commande                                     | Effet                                               |
+| -------------------------------------------- | --------------------------------------------------- |
+| `pnpm lint` / `pnpm typecheck` / `pnpm test` | qualité et tests (Vitest)                           |
+| `pnpm build` / `pnpm preview`                | build de production (PWA, service worker) et aperçu |
+| `pnpm icons`                                 | régénère les icônes PWA                             |
+| `pnpm shared:sync` / `pnpm shared:check`     | récupère / contrôle `src/shared` depuis blaito      |
 
 ## Production
 

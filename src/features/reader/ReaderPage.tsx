@@ -47,7 +47,9 @@ export function ReaderPage() {
     if (!first) {
       return (
         <ReaderError
-          error={new Error('Ce livre ne contient pas encore de chapitre lisible. Revenez bientôt !')}
+          error={
+            new Error('Ce livre ne contient pas encore de chapitre lisible. Revenez bientôt !')
+          }
         />
       );
     }
@@ -242,7 +244,9 @@ function ChapterReader({
       window.removeEventListener('pagehide', onPageHide);
       document.removeEventListener('visibilitychange', onVisibility);
       if (lastSent.current !== position.current) {
-        void readApi.saveProgress({ bookId, chapterId, position: position.current }).catch(() => undefined);
+        void readApi
+          .saveProgress({ bookId, chapterId, position: position.current })
+          .catch(() => undefined);
       }
     };
   }, [canSave, bookId, chapterId, qc]);
@@ -323,7 +327,10 @@ function ChapterReader({
     >
       {/* Barre de progression fine */}
       <div className="fixed inset-x-0 top-0 z-40 h-0.5" aria-hidden>
-        <div className="h-full origin-left bg-[var(--r-ornament)] transition-transform duration-200" style={{ transform: `scaleX(${progress})` }} />
+        <div
+          className="h-full origin-left bg-[var(--r-ornament)] transition-transform duration-200"
+          style={{ transform: `scaleX(${progress})` }}
+        />
       </div>
 
       {/* Interface : disparaît pendant la lecture, revient d'un toucher */}
@@ -366,7 +373,9 @@ function ChapterReader({
         />
       </header>
 
-      {panel === 'settings' && <ReaderSettings prefs={prefs} onChange={setPrefs} onClose={() => setPanel(null)} />}
+      {panel === 'settings' && (
+        <ReaderSettings prefs={prefs} onChange={setPrefs} onClose={() => setPanel(null)} />
+      )}
       {panel === 'chapters' && (
         <nav
           aria-label="Table des matières"
@@ -401,7 +410,10 @@ function ChapterReader({
         onClick={onTap}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className={cx('mx-auto px-3 sm:px-6', paged ? 'flex h-dvh flex-col pb-14 pt-16' : 'pb-28 pt-20')}
+        className={cx(
+          'mx-auto px-3 sm:px-6',
+          paged ? 'flex h-dvh flex-col pb-14 pt-16' : 'pb-28 pt-20',
+        )}
         style={{ maxWidth: `calc(${MEASURE[prefs.margin]} + 6rem)` }}
       >
         {chapter.error ? (
@@ -416,7 +428,10 @@ function ChapterReader({
         ) : (
           <article
             lang="fr"
-            className={cx('prose-book rounded-lg px-5 sm:px-12', paged ? 'min-h-0 flex-1 py-8' : 'py-10 sm:py-14')}
+            className={cx(
+              'prose-book rounded-lg px-5 sm:px-12',
+              paged ? 'min-h-0 flex-1 py-8' : 'py-10 sm:py-14',
+            )}
             style={{
               background: 'var(--r-page)',
               fontFamily: FONT[prefs.fontFamily],
@@ -426,7 +441,11 @@ function ChapterReader({
               boxShadow: '0 1px 2px rgb(0 0 0 / 0.05), 0 8px 30px rgb(0 0 0 / 0.06)',
             }}
           >
-            <div ref={viewport} className={cx(paged && 'h-full overflow-hidden')} style={{ perspective: 1200 }}>
+            <div
+              ref={viewport}
+              className={cx(paged && 'h-full overflow-hidden')}
+              style={{ perspective: 1200 }}
+            >
               <div
                 key={paged ? `p${page}` : 'scroll'}
                 className={cx(
@@ -435,39 +454,45 @@ function ChapterReader({
                   paged && turn === 'prev' && '[animation:page-turn-prev_320ms_var(--ease-soft)]',
                 )}
               >
-              <div
-                ref={columns}
-                className="relative"
-                style={
-                  paged
-                    ? {
-                        height: '100%',
-                        columnWidth: vw,
-                        columnGap: GAP,
-                        columnFill: 'auto',
-                        transform: `translateX(-${page * stride}px)`,
-                      }
-                    : undefined
-                }
-              >
-                <header className="mb-10 text-center" style={{ textAlign: 'center', breakInside: 'avoid' }}>
-                  <p className="text-xs uppercase tracking-[0.25em]" style={{ color: 'var(--r-muted)', fontFamily: 'Inter, sans-serif' }}>
-                    Chapitre {index + 1}
-                  </p>
-                  <h1 className="!mt-2 !mb-3" style={{ fontSize: '1.7em' }}>
-                    {data.chapter.title}
-                  </h1>
-                  <p aria-hidden style={{ color: 'var(--r-ornament)' }}>
-                    ⁂
-                  </p>
-                </header>
-                <ChapterText content={data.content} />
-                {!data.nextChapterId && (
-                  <p className="scene-break" aria-label="Fin">
-                    ❦ Fin ❦
-                  </p>
-                )}
-              </div>
+                <div
+                  ref={columns}
+                  className="relative"
+                  style={
+                    paged
+                      ? {
+                          height: '100%',
+                          columnWidth: vw,
+                          columnGap: GAP,
+                          columnFill: 'auto',
+                          transform: `translateX(-${page * stride}px)`,
+                        }
+                      : undefined
+                  }
+                >
+                  <header
+                    className="mb-10 text-center"
+                    style={{ textAlign: 'center', breakInside: 'avoid' }}
+                  >
+                    <p
+                      className="text-xs uppercase tracking-[0.25em]"
+                      style={{ color: 'var(--r-muted)', fontFamily: 'Inter, sans-serif' }}
+                    >
+                      Chapitre {index + 1}
+                    </p>
+                    <h1 className="!mt-2 !mb-3" style={{ fontSize: '1.7em' }}>
+                      {data.chapter.title}
+                    </h1>
+                    <p aria-hidden style={{ color: 'var(--r-ornament)' }}>
+                      ⁂
+                    </p>
+                  </header>
+                  <ChapterText content={data.content} />
+                  {!data.nextChapterId && (
+                    <p className="scene-break" aria-label="Fin">
+                      ❦ Fin ❦
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </article>
@@ -477,7 +502,12 @@ function ChapterReader({
         {data && !paged && (
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
             {data.previousChapterId ? (
-              <Button variant="ghost" icon="chevronLeft" onClick={() => goChapter(data.previousChapterId)} className="text-[inherit]">
+              <Button
+                variant="ghost"
+                icon="chevronLeft"
+                onClick={() => goChapter(data.previousChapterId)}
+                className="text-[inherit]"
+              >
                 Précédent
               </Button>
             ) : (
@@ -499,7 +529,11 @@ function ChapterReader({
           ui || paged ? 'opacity-100' : 'opacity-0',
         )}
       >
-        <p className="glass rounded-full px-3 py-1 text-xs" style={{ color: 'var(--r-muted)' }} aria-live="off">
+        <p
+          className="glass rounded-full px-3 py-1 text-xs"
+          style={{ color: 'var(--r-muted)' }}
+          aria-live="off"
+        >
           {paged && `Page ${page + 1} / ${pages} · `}
           {remainingMin > 0 ? `${remainingMin} min restantes dans ce chapitre` : 'Fin du chapitre'}
         </p>
@@ -515,7 +549,10 @@ function ReaderError({ error, inline }: { error: unknown; inline?: boolean }) {
       {notFound ? (
         <>
           <h1 className="text-2xl">Ce livre est introuvable</h1>
-          <p className="text-muted">Il n’existe pas, ou il n’est pas partagé avec vous. Si on vous a donné un lien, il a peut-être expiré.</p>
+          <p className="text-muted">
+            Il n’existe pas, ou il n’est pas partagé avec vous. Si on vous a donné un lien, il a
+            peut-être expiré.
+          </p>
         </>
       ) : (
         <ErrorNotice error={error} />

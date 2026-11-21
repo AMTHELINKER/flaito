@@ -15,14 +15,24 @@ import {
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage';
 import { HomePage, LibraryPage, NewBookPage } from '@/features/library/LibraryPages';
 
-const EditorPage = lazy(() => import('@/features/editor/EditorPage').then((m) => ({ default: m.EditorPage })));
-const ReaderPage = lazy(() => import('@/features/reader/ReaderPage').then((m) => ({ default: m.ReaderPage })));
+const EditorPage = lazy(() =>
+  import('@/features/editor/EditorPage').then((m) => ({ default: m.EditorPage })),
+);
+const ReaderPage = lazy(() =>
+  import('@/features/reader/ReaderPage').then((m) => ({ default: m.ReaderPage })),
+);
 const BookSettingsPage = lazy(() =>
   import('@/features/book/BookSettingsPage').then((m) => ({ default: m.BookSettingsPage })),
 );
-const DiscoverPage = lazy(() => import('@/features/discover/DiscoverPage').then((m) => ({ default: m.DiscoverPage })));
-const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })));
-const MyProfilePage = lazy(() => import('@/features/profile/ProfilePages').then((m) => ({ default: m.MyProfilePage })));
+const DiscoverPage = lazy(() =>
+  import('@/features/discover/DiscoverPage').then((m) => ({ default: m.DiscoverPage })),
+);
+const SettingsPage = lazy(() =>
+  import('@/features/settings/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+);
+const MyProfilePage = lazy(() =>
+  import('@/features/profile/ProfilePages').then((m) => ({ default: m.MyProfilePage })),
+);
 const PublicProfilePage = lazy(() =>
   import('@/features/profile/ProfilePages').then((m) => ({ default: m.PublicProfilePage })),
 );

@@ -39,7 +39,13 @@ export function wrapEdit(value: string, start: number, end: number, marker: stri
   };
 }
 
-export function linePrefixEdit(value: string, start: number, end: number, prefix: string, re: RegExp): Edit {
+export function linePrefixEdit(
+  value: string,
+  start: number,
+  end: number,
+  prefix: string,
+  re: RegExp,
+): Edit {
   const { ls, le } = lineBounds(value, start, end);
   const lines = value.slice(ls, le).split('\n');
   const all = lines.every((l) => !l.trim() || re.test(l));
@@ -95,10 +101,26 @@ export function caretCoords(ta: HTMLTextAreaElement, pos: number) {
   const div = document.createElement('div');
   const cs = getComputedStyle(ta);
   const props = [
-    'boxSizing', 'width', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-    'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
-    'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'letterSpacing', 'lineHeight',
-    'textTransform', 'wordSpacing', 'textIndent', 'tabSize',
+    'boxSizing',
+    'width',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'borderTopWidth',
+    'borderRightWidth',
+    'borderBottomWidth',
+    'borderLeftWidth',
+    'fontFamily',
+    'fontSize',
+    'fontWeight',
+    'fontStyle',
+    'letterSpacing',
+    'lineHeight',
+    'textTransform',
+    'wordSpacing',
+    'textIndent',
+    'tabSize',
   ] as const;
   props.forEach((p) => {
     (div.style as unknown as Record<string, string>)[p] = cs[p] as string;

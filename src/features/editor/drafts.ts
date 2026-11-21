@@ -42,7 +42,8 @@ export const drafts = {
     const d = await drafts.get(chapterId);
     if (d && d.content === savedContent) await drafts.remove(chapterId);
   },
-  all: () => safe(() => entries<string, Draft>(db()).then((xs) => xs.map(([, v]) => v)), [] as Draft[]),
+  all: () =>
+    safe(() => entries<string, Draft>(db()).then((xs) => xs.map(([, v]) => v)), [] as Draft[]),
 };
 
 let syncing = false;

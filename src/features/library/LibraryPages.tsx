@@ -33,14 +33,19 @@ export function HomePage() {
     queryFn: () => catalogApi.list({ sort: 'trending', limit: 8 }),
   });
 
-  const lastWritten = [...(books.data ?? [])].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+  const lastWritten = [...(books.data ?? [])].sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt),
+  )[0];
   const lastRead = progress.data?.[0];
   const hour = new Date().getHours();
   const greet = hour < 6 || hour >= 19 ? 'Bonsoir' : 'Bonjour';
 
   return (
     <>
-      <PageHeader title={`${greet}, ${user?.profile.displayName ?? ''}`} subtitle="Votre carnet vous attend." />
+      <PageHeader
+        title={`${greet}, ${user?.profile.displayName ?? ''}`}
+        subtitle="Votre carnet vous attend."
+      />
 
       <section aria-labelledby="reprendre" className="mb-10">
         <h2 id="reprendre" className="mb-3 text-xl">
@@ -59,7 +64,9 @@ export function HomePage() {
             />
           ) : (
             <Card className="flex flex-col items-start justify-center gap-3">
-              <p className="font-serif text-lg">Aucun livre pour l’instant – commencez votre premier chapitre.</p>
+              <p className="font-serif text-lg">
+                Aucun livre pour l’instant – commencez votre premier chapitre.
+              </p>
               <Link to="/ecrire">
                 <Button icon="pen">Créer mon premier livre</Button>
               </Link>
@@ -93,7 +100,10 @@ export function HomePage() {
           <h2 id="suggestions" className="text-xl">
             Suggestions
           </h2>
-          <Link to="/decouvrir" className="text-sm text-accent-text underline-offset-2 hover:underline">
+          <Link
+            to="/decouvrir"
+            className="text-sm text-accent-text underline-offset-2 hover:underline"
+          >
             Tout voir
           </Link>
         </div>
@@ -108,7 +118,11 @@ export function HomePage() {
             ))}
           </BookGrid>
         ) : (
-          <EmptyState icon="compass" title="Le catalogue se remplit doucement" text="Les premiers livres publics apparaîtront ici." />
+          <EmptyState
+            icon="compass"
+            title="Le catalogue se remplit doucement"
+            text="Les premiers livres publics apparaîtront ici."
+          />
         )}
       </section>
     </>
@@ -134,7 +148,9 @@ function ResumeCard({
         <BookCover title={book.title} coverUrl={book.coverUrl} />
       </div>
       <div className="flex min-w-0 flex-col gap-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-accent-text">{kicker}</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-accent-text">
+          {kicker}
+        </span>
         <h3 className="truncate text-lg">{book.title}</h3>
         <p className="text-sm text-muted">{detail}</p>
         <span className="mt-auto inline-flex items-center gap-1 text-sm font-medium">
@@ -226,7 +242,10 @@ function MyReadings() {
     <ul className="flex flex-col gap-3">
       {q.data.map((p) => (
         <li key={p.bookId}>
-          <Link to={`/lire/${p.bookId}/${p.chapterId}`} className="glass pressable flex items-center gap-4 rounded-lg p-3">
+          <Link
+            to={`/lire/${p.bookId}/${p.chapterId}`}
+            className="glass pressable flex items-center gap-4 rounded-lg p-3"
+          >
             <div className="w-14 shrink-0">
               <BookCover title={p.book.title} coverUrl={p.book.coverUrl} />
             </div>
@@ -250,7 +269,13 @@ function SharedWithMe() {
   if (q.isLoading) return <BookGridSkeleton />;
   if (q.error) return <ErrorNotice error={q.error} onRetry={() => q.refetch()} />;
   if (!q.data?.length)
-    return <EmptyState icon="users" title="Rien de partagé pour l’instant" text="Quand un auteur vous invite à lire, son livre apparaît ici." />;
+    return (
+      <EmptyState
+        icon="users"
+        title="Rien de partagé pour l’instant"
+        text="Quand un auteur vous invite à lire, son livre apparaît ici."
+      />
+    );
   return (
     <BookGrid>
       {q.data.map((b) => (
@@ -314,7 +339,13 @@ export function NewBookPage() {
           />
           {more ? (
             <>
-              <TextArea label="Résumé" rows={3} value={summary} maxLength={2000} onChange={(e) => setSummary(e.target.value)} />
+              <TextArea
+                label="Résumé"
+                rows={3}
+                value={summary}
+                maxLength={2000}
+                onChange={(e) => setSummary(e.target.value)}
+              />
               <SelectField label="Genre" value={genre} onChange={(e) => setGenre(e.target.value)}>
                 <option value="">— Choisir —</option>
                 {GENRES.map((g) => (

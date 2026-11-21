@@ -9,7 +9,15 @@ import { Button, Card, TextField, cx } from '@/components/ui/primitives';
 import { Icon } from '@/components/ui/Icon';
 import { applyTheme, applyUiFontSize, storedTheme, type UiTheme } from '@/lib/theme';
 
-export function AuthLayout({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+export function AuthLayout({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-4 py-10">
       <Link to="/" className="mb-8" aria-label="Laito">
@@ -27,7 +35,10 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
 function FormError({ msg }: { msg: string | null }) {
   if (!msg) return null;
   return (
-    <p role="alert" className="rounded-md border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger">
+    <p
+      role="alert"
+      className="rounded-md border border-danger/30 bg-danger/5 px-3 py-2 text-sm text-danger"
+    >
       {msg}
     </p>
   );
@@ -54,7 +65,11 @@ export function LoginPage() {
       await login({ email, password });
       navigate(params.get('next') || '/', { replace: true });
     } catch (err) {
-      if (err instanceof ApiRequestError && err.status === 403 && err.code === 'EMAIL_NOT_VERIFIED') {
+      if (
+        err instanceof ApiRequestError &&
+        err.status === 403 &&
+        err.code === 'EMAIL_NOT_VERIFIED'
+      ) {
         setUnverified(true);
       } else if (err instanceof ApiRequestError && err.status === 401) {
         setError('E-mail ou mot de passe incorrect.');
@@ -67,7 +82,14 @@ export function LoginPage() {
   return (
     <AuthLayout title="Bon retour" subtitle="Retrouvez vos carnets là où vous les avez laissés.">
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <TextField label="E-mail" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        <TextField
+          label="E-mail"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <TextField
           label="Mot de passe"
           type="password"
@@ -79,7 +101,10 @@ export function LoginPage() {
         <FormError msg={error} />
         {unverified && (
           <div role="alert" className="rounded-md border border-line bg-page px-3 py-3 text-sm">
-            <p>Votre adresse n’est pas encore vérifiée. Ouvrez le lien reçu par e-mail pour activer votre compte.</p>
+            <p>
+              Votre adresse n’est pas encore vérifiée. Ouvrez le lien reçu par e-mail pour activer
+              votre compte.
+            </p>
             <Button
               type="button"
               variant="secondary"
@@ -99,7 +124,10 @@ export function LoginPage() {
           Se connecter
         </Button>
         <div className="flex flex-wrap justify-between gap-2 text-sm">
-          <Link to="/mot-de-passe-oublie" className="text-accent-text underline-offset-2 hover:underline">
+          <Link
+            to="/mot-de-passe-oublie"
+            className="text-accent-text underline-offset-2 hover:underline"
+          >
             Mot de passe oublié ?
           </Link>
           <Link to="/inscription" className="text-accent-text underline-offset-2 hover:underline">
@@ -168,9 +196,13 @@ export function RegisterPage() {
 
   if (done) {
     return (
-      <AuthLayout title="Vérifiez votre boîte mail" subtitle={`Un lien d’activation a été envoyé à ${form.email}.`}>
+      <AuthLayout
+        title="Vérifiez votre boîte mail"
+        subtitle={`Un lien d’activation a été envoyé à ${form.email}.`}
+      >
         <p className="text-muted">
-          Cliquez sur le lien pour activer votre compte. Vous arriverez directement sur la création de votre premier livre.
+          Cliquez sur le lien pour activer votre compte. Vous arriverez directement sur la création
+          de votre premier livre.
         </p>
         <Button
           variant="secondary"
@@ -184,9 +216,19 @@ export function RegisterPage() {
   }
 
   return (
-    <AuthLayout title="Créer votre carnet" subtitle="Quelques secondes, et la page blanche est à vous.">
+    <AuthLayout
+      title="Créer votre carnet"
+      subtitle="Quelques secondes, et la page blanche est à vous."
+    >
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <TextField label="E-mail" type="email" autoComplete="email" required value={form.email} onChange={set('email')} />
+        <TextField
+          label="E-mail"
+          type="email"
+          autoComplete="email"
+          required
+          value={form.email}
+          onChange={set('email')}
+        />
         <TextField
           label="Mot de passe"
           type="password"
@@ -207,7 +249,12 @@ export function RegisterPage() {
             onChange={set('username')}
             error={userError}
           />
-          <TextField label="Nom affiché" value={form.displayName} onChange={set('displayName')} placeholder="Facultatif" />
+          <TextField
+            label="Nom affiché"
+            value={form.displayName}
+            onChange={set('displayName')}
+            placeholder="Facultatif"
+          />
         </div>
 
         <fieldset>
@@ -275,8 +322,8 @@ export function RegisterPage() {
 
         <FormError msg={error} />
         <p className="text-xs text-muted">
-          En créant un compte, vous acceptez que vos données soient traitées pour faire fonctionner Laito. Vous pouvez les
-          exporter ou les supprimer à tout moment depuis les paramètres.
+          En créant un compte, vous acceptez que vos données soient traitées pour faire fonctionner
+          Laito. Vous pouvez les exporter ou les supprimer à tout moment depuis les paramètres.
         </p>
         <Button type="submit" size="lg" busy={busy}>
           Créer mon compte
@@ -298,7 +345,9 @@ export function VerifyEmailPage() {
   const token = params.get('token');
   const { acceptAuth } = useAuth();
   const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(token ? null : 'Lien de vérification incomplet.');
+  const [error, setError] = useState<string | null>(
+    token ? null : 'Lien de vérification incomplet.',
+  );
   const started = useRef(false);
 
   useEffect(() => {
@@ -310,7 +359,13 @@ export function VerifyEmailPage() {
         acceptAuth(res);
         navigate('/ecrire?premier=1', { replace: true });
       })
-      .catch((e) => setError(e instanceof ApiRequestError && e.status === 400 ? 'Ce lien a expiré ou a déjà été utilisé.' : errorMessage(e)));
+      .catch((e) =>
+        setError(
+          e instanceof ApiRequestError && e.status === 400
+            ? 'Ce lien a expiré ou a déjà été utilisé.'
+            : errorMessage(e),
+        ),
+      );
   }, [token, acceptAuth, navigate]);
 
   return (
@@ -337,9 +392,15 @@ export function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   return (
-    <AuthLayout title="Mot de passe oublié" subtitle="Nous vous enverrons un lien pour en choisir un nouveau.">
+    <AuthLayout
+      title="Mot de passe oublié"
+      subtitle="Nous vous enverrons un lien pour en choisir un nouveau."
+    >
       {sent ? (
-        <p className="text-muted">Si un compte existe pour {email}, un e-mail vient de partir. Pensez à vérifier vos indésirables.</p>
+        <p className="text-muted">
+          Si un compte existe pour {email}, un e-mail vient de partir. Pensez à vérifier vos
+          indésirables.
+        </p>
       ) : (
         <form
           className="flex flex-col gap-4"
@@ -351,13 +412,22 @@ export function ForgotPasswordPage() {
             setSent(true);
           }}
         >
-          <TextField label="E-mail" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <TextField
+            label="E-mail"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
           <Button type="submit" busy={busy}>
             Envoyer le lien
           </Button>
         </form>
       )}
-      <Link to="/connexion" className="mt-4 inline-block text-sm text-accent-text underline-offset-2 hover:underline">
+      <Link
+        to="/connexion"
+        className="mt-4 inline-block text-sm text-accent-text underline-offset-2 hover:underline"
+      >
         Retour à la connexion
       </Link>
     </AuthLayout>

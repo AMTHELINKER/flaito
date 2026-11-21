@@ -47,7 +47,11 @@ const statusTone: Record<WritingStatus, string> = {
 export function StatusBadge({ value, className }: { value: WritingStatus; className?: string }) {
   return (
     <span
-      className={cx('inline-flex rounded-full px-2 py-0.5 text-xs font-medium', statusTone[value], className)}
+      className={cx(
+        'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+        statusTone[value],
+        className,
+      )}
     >
       {STATUS_LABELS[value]}
     </span>

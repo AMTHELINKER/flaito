@@ -18,7 +18,12 @@ interface ToastApi {
    * Action annulable : `commit` est exécuté après le délai si l'utilisateur
    * n'a pas cliqué sur « Annuler ». `revert` restaure l'état local.
    */
-  undoable: (message: string, commit: () => void | Promise<void>, revert?: () => void, ms?: number) => void;
+  undoable: (
+    message: string,
+    commit: () => void | Promise<void>,
+    revert?: () => void,
+    ms?: number,
+  ) => void;
 }
 
 const ToastContext = createContext<ToastApi | null>(null);
@@ -41,7 +46,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const api = useMemo<ToastApi>(
     () => ({
-      show: (message, o) => void push({ message, tone: o?.tone ?? 'info', duration: o?.duration ?? 3000 }),
+      show: (message, o) =>
+        void push({ message, tone: o?.tone ?? 'info', duration: o?.duration ?? 3000 }),
       success: (message) => void push({ message, tone: 'success', duration: 2600 }),
       error: (message) => void push({ message, tone: 'error', duration: 5000 }),
       undoable: (message, commit, revert, ms = 5000) => {

@@ -5,7 +5,15 @@ import { StatusBadge, VisibilityBadge } from './badges';
 import { formatWords } from '@/lib/format';
 import { Skeleton } from './ui/primitives';
 
-export function BookCard({ book, to, showMeta = true }: { book: BookDto; to: string; showMeta?: boolean }) {
+export function BookCard({
+  book,
+  to,
+  showMeta = true,
+}: {
+  book: BookDto;
+  to: string;
+  showMeta?: boolean;
+}) {
   return (
     <Link
       to={to}
@@ -22,7 +30,8 @@ export function BookCard({ book, to, showMeta = true }: { book: BookDto; to: str
           </div>
         )}
         <p className="text-xs text-muted">
-          {book.chapterCount} chapitre{book.chapterCount > 1 ? 's' : ''} · {formatWords(book.wordCount)}
+          {book.chapterCount} chapitre{book.chapterCount > 1 ? 's' : ''} ·{' '}
+          {formatWords(book.wordCount)}
         </p>
       </div>
     </Link>
@@ -30,7 +39,11 @@ export function BookCard({ book, to, showMeta = true }: { book: BookDto; to: str
 }
 
 export function BookGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">{children}</div>;
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {children}
+    </div>
+  );
 }
 
 export function BookGridSkeleton({ count = 4 }: { count?: number }) {

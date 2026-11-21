@@ -8,19 +8,35 @@ import { Link } from 'react-router-dom';
 /** /s/:token → résout le lien privé puis ouvre le lecteur. */
 export function ShareLandingPage() {
   const { token = '' } = useParams();
-  const q = useQuery({ queryKey: ['share', 'resolve', token], queryFn: () => shareApi.resolve(token), retry: false });
+  const q = useQuery({
+    queryKey: ['share', 'resolve', token],
+    queryFn: () => shareApi.resolve(token),
+    retry: false,
+  });
   if (q.data) {
     const { resourceType, resourceId, bookId } = q.data;
     const share = `?share=${encodeURIComponent(token)}`;
     return (
-      <Navigate to={resourceType === 'chapter' ? `/lire/${bookId}/${resourceId}${share}` : `/lire/${bookId}${share}`} replace />
+      <Navigate
+        to={
+          resourceType === 'chapter'
+            ? `/lire/${bookId}/${resourceId}${share}`
+            : `/lire/${bookId}${share}`
+        }
+        replace
+      />
     );
   }
   if (q.error) {
     return (
       <AuthLayout title="Lien indisponible">
-        <p className="text-muted">Ce lien a expiré ou a été révoqué par son auteur. Demandez-lui un nouveau lien.</p>
-        <Link to="/" className="mt-4 inline-block text-accent-text underline-offset-2 hover:underline">
+        <p className="text-muted">
+          Ce lien a expiré ou a été révoqué par son auteur. Demandez-lui un nouveau lien.
+        </p>
+        <Link
+          to="/"
+          className="mt-4 inline-block text-accent-text underline-offset-2 hover:underline"
+        >
           Découvrir Laito
         </Link>
       </AuthLayout>

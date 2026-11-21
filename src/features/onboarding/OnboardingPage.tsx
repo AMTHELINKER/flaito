@@ -37,11 +37,18 @@ export function OnboardingPage() {
     <div className="flex min-h-dvh flex-col px-4 py-6">
       <div className="mx-auto flex w-full max-w-md items-center justify-between">
         <Logo />
-        <button type="button" onClick={finish} className="pressable min-h-11 rounded-md px-3 text-sm text-muted hover:text-fg">
+        <button
+          type="button"
+          onClick={finish}
+          className="pressable min-h-11 rounded-md px-3 text-sm text-muted hover:text-fg"
+        >
           Passer
         </button>
       </div>
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center text-center" aria-live="polite">
+      <div
+        className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center text-center"
+        aria-live="polite"
+      >
         <div key={step} className="flex flex-col items-center gap-5 animate-rise">
           <div className="glass flex h-24 w-24 items-center justify-center rounded-full text-accent-text">
             <Icon name={s.icon} size={44} strokeWidth={1.3} />
@@ -51,9 +58,18 @@ export function OnboardingPage() {
         </div>
       </div>
       <div className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <div className="flex justify-center gap-2" aria-label={`Étape ${step + 1} sur ${STEPS.length}`}>
+        <div
+          className="flex justify-center gap-2"
+          aria-label={`Étape ${step + 1} sur ${STEPS.length}`}
+        >
           {STEPS.map((_, i) => (
-            <span key={i} className={cx('h-1.5 rounded-full transition-all duration-200', i === step ? 'w-6 bg-accent' : 'w-1.5 bg-fg/20')} />
+            <span
+              key={i}
+              className={cx(
+                'h-1.5 rounded-full transition-all duration-200',
+                i === step ? 'w-6 bg-accent' : 'w-1.5 bg-fg/20',
+              )}
+            />
           ))}
         </div>
         <Button size="lg" onClick={() => (step < STEPS.length - 1 ? setStep(step + 1) : finish())}>

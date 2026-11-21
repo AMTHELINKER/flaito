@@ -42,7 +42,9 @@ export function AppShell() {
               className={({ isActive }) =>
                 cx(
                   'pressable flex min-h-11 items-center gap-3 rounded-md px-3 text-[0.95rem]',
-                  isActive ? 'bg-page font-semibold shadow-soft' : 'text-muted hover:bg-fg/[0.05] hover:text-fg',
+                  isActive
+                    ? 'bg-page font-semibold shadow-soft'
+                    : 'text-muted hover:bg-fg/[0.05] hover:text-fg',
                 )
               }
             >
@@ -83,7 +85,11 @@ export function AppShell() {
         </div>
       )}
 
-      <main id="contenu" key={location.pathname} className="mx-auto max-w-6xl px-4 pb-28 pt-6 animate-fade-in sm:px-6 md:pb-12 md:pt-10">
+      <main
+        id="contenu"
+        key={location.pathname}
+        className="mx-auto max-w-6xl px-4 pb-28 pt-6 animate-fade-in sm:px-6 md:pb-12 md:pt-10"
+      >
         <Outlet />
       </main>
 
@@ -106,7 +112,12 @@ export function AppShell() {
           >
             {({ isActive }) => (
               <>
-                <span className={cx('rounded-full px-3 py-0.5 transition-colors', isActive && 'bg-accent/25')}>
+                <span
+                  className={cx(
+                    'rounded-full px-3 py-0.5 transition-colors',
+                    isActive && 'bg-accent/25',
+                  )}
+                >
                   <Icon name={n.icon} size={22} />
                 </span>
                 {n.label}

@@ -8,11 +8,15 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --port 4173",
     "typecheck": "tsc -b --noEmit",
-    "lint": "eslint src",
+    "lint": "eslint src e2e",
     "test": "vitest run",
     "icons": "node scripts/generate-icons.mjs",
     "shared:sync": "node scripts/sync-shared.mjs",
-    "shared:check": "node scripts/sync-shared.mjs --check"
+    "shared:check": "node scripts/sync-shared.mjs --check",
+    "prepare": "husky || true",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@fontsource/inter": "^5.1.0",
@@ -25,7 +29,10 @@
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^9.16.0",
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/vite": "^4.0.0",
     "@testing-library/react": "^16.1.0",
     "@types/node": "^22.20.5",
@@ -36,7 +43,10 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.13.0",
+    "husky": "^9.1.7",
     "jsdom": "^25.0.1",
+    "lint-staged": "^17.6.1",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.0.0",
     "typescript": "~5.6.3",
     "typescript-eslint": "^8.18.0",
@@ -48,5 +58,14 @@
   "packageManager": "pnpm@12.21.0",
   "engines": {
     "node": ">=22"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml,css,html}": [
+      "prettier --write"
+    ]
   }
 }

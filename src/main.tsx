@@ -17,7 +17,8 @@ const queryClient = new QueryClient({
       staleTime: 30_000,
       refetchOnWindowFocus: false,
       networkMode: 'offlineFirst',
-      retry: (n, e) => n < 2 && !(e instanceof ApiRequestError && e.status >= 400 && e.status < 500),
+      retry: (n, e) =>
+        n < 2 && !(e instanceof ApiRequestError && e.status >= 400 && e.status < 500),
     },
     mutations: { networkMode: 'always' },
   },

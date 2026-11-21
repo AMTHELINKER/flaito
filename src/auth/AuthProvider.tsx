@@ -99,29 +99,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const updateSettings = useCallback(
-    async (patch: Partial<UserSettingsDto>) => {
-      if (patch.theme) applyTheme(patch.theme);
-      setUserState((prev) =>
-        prev
-          ? {
-              ...prev,
-              settings: {
-                ...prev.settings,
-                ...patch,
-                readingPreferences: {
-                  ...prev.settings.readingPreferences,
-                  ...(patch.readingPreferences ?? {}),
-                },
+  const updateSettings = useCallback(async (patch: Partial<UserSettingsDto>) => {
+    if (patch.theme) applyTheme(patch.theme);
+    setUserState((prev) =>
+      prev
+        ? {
+            ...prev,
+            settings: {
+              ...prev.settings,
+              ...patch,
+              readingPreferences: {
+                ...prev.settings.readingPreferences,
+                ...(patch.readingPreferences ?? {}),
               },
-            }
-          : prev,
-      );
-      const settings = await meApi.updateSettings(patch);
-      setUserState((prev) => (prev ? { ...prev, settings } : prev));
-    },
-    [],
-  );
+            },
+          }
+        : prev,
+    );
+    const settings = await meApi.updateSettings(patch);
+    setUserState((prev) => (prev ? { ...prev, settings } : prev));
+  }, []);
 
   const value = useMemo(
     () => ({ status, user, login, acceptAuth, logout, setUser, updateSettings }),

@@ -25,8 +25,10 @@ export class ApiRequestError extends Error {
     if (status === 0) return 'Connexion perdue – vos écrits sont gardés sur l’appareil.';
     if (status === 401) return 'Votre session a expiré, reconnectez-vous.';
     if (status === 403) return 'Vous n’avez pas accès à cette action.';
-    if (status === 404) return 'Introuvable – ce contenu n’existe pas ou n’est pas partagé avec vous.';
-    if (status === 409) return 'Ce contenu a changé ailleurs. Rechargez pour récupérer la dernière version.';
+    if (status === 404)
+      return 'Introuvable – ce contenu n’existe pas ou n’est pas partagé avec vous.';
+    if (status === 409)
+      return 'Ce contenu a changé ailleurs. Rechargez pour récupérer la dernière version.';
     if (status === 413) return 'Fichier trop volumineux (5 Mo maximum).';
     if (status === 429) return 'Trop de tentatives, réessayez dans un instant.';
     if (status >= 500) return 'Le serveur rencontre un souci. Réessayez dans un moment.';
@@ -101,7 +103,12 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
       h.set('Content-Type', 'application/json');
       payload = JSON.stringify(body);
     }
-    return fetchImpl(`${API_BASE}${path}`, { ...init, headers: h, body: payload, credentials: 'include' });
+    return fetchImpl(`${API_BASE}${path}`, {
+      ...init,
+      headers: h,
+      body: payload,
+      credentials: 'include',
+    });
   };
 
   let res: Response;

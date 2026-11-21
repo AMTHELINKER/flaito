@@ -23,7 +23,11 @@ export function DiscoverPage() {
   };
   const debouncedSearch = useDebouncedCallback((v: string) => update({ q: v.trim() }), 350);
 
-  const genres = useQuery({ queryKey: qk.genres, queryFn: catalogApi.genres, staleTime: 5 * 60_000 });
+  const genres = useQuery({
+    queryKey: qk.genres,
+    queryFn: catalogApi.genres,
+    staleTime: 5 * 60_000,
+  });
   const filters = { q, genre, sort };
   const books = useInfiniteQuery({
     queryKey: qk.catalog(filters),
@@ -78,8 +82,13 @@ export function DiscoverPage() {
             Toutes
           </GenreChip>
           {genres.data.map((g) => (
-            <GenreChip key={g.genre} active={genre === g.genre} onClick={() => update({ genre: genre === g.genre ? '' : g.genre })}>
-              {g.genre[0].toUpperCase() + g.genre.slice(1)} <span className="text-muted">{g.count}</span>
+            <GenreChip
+              key={g.genre}
+              active={genre === g.genre}
+              onClick={() => update({ genre: genre === g.genre ? '' : g.genre })}
+            >
+              {g.genre[0].toUpperCase() + g.genre.slice(1)}{' '}
+              <span className="text-muted">{g.count}</span>
             </GenreChip>
           ))}
         </div>
@@ -98,7 +107,11 @@ export function DiscoverPage() {
           </BookGrid>
           {books.hasNextPage && (
             <div className="mt-6 flex justify-center">
-              <Button variant="secondary" busy={books.isFetchingNextPage} onClick={() => books.fetchNextPage()}>
+              <Button
+                variant="secondary"
+                busy={books.isFetchingNextPage}
+                onClick={() => books.fetchNextPage()}
+              >
                 Voir plus
               </Button>
             </div>
@@ -108,14 +121,26 @@ export function DiscoverPage() {
         <EmptyState
           icon="search"
           title="Aucun livre trouvé"
-          text={q || genre ? 'Essayez un autre mot ou une autre catégorie.' : 'Les premiers livres publics arrivent bientôt.'}
+          text={
+            q || genre
+              ? 'Essayez un autre mot ou une autre catégorie.'
+              : 'Les premiers livres publics arrivent bientôt.'
+          }
         />
       )}
     </>
   );
 }
 
-function GenreChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function GenreChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       type="button"
@@ -123,7 +148,9 @@ function GenreChip({ active, onClick, children }: { active: boolean; onClick: ()
       onClick={onClick}
       className={cx(
         'pressable inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-sm',
-        active ? 'border-accent-text bg-page font-semibold shadow-soft' : 'border-line hover:bg-page/60',
+        active
+          ? 'border-accent-text bg-page font-semibold shadow-soft'
+          : 'border-line hover:bg-page/60',
       )}
     >
       {children}

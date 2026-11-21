@@ -65,5 +65,7 @@ if (!drift.length) {
   );
   process.exit(1);
 } else {
-  console.log(`Mis à jour : ${drift.join(', ')}. Vérifiez avec « pnpm typecheck && pnpm test », puis commitez.`);
+  console.log(
+    `Mis à jour : ${drift.join(', ')}. Vérifiez avec « pnpm typecheck && pnpm test », puis commitez.`,
+  );
 }

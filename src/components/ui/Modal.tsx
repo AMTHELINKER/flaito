@@ -57,7 +57,9 @@ export function Modal({
             <IconButton icon="x" label="Fermer" onClick={onClose} />
           </div>
           <div className="overflow-y-auto px-5 pb-4 pt-2">{children}</div>
-          {footer && <div className="flex justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>}
+          {footer && (
+            <div className="flex justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>
+          )}
         </div>
       )}
     </dialog>

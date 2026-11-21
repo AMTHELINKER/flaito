@@ -21,7 +21,8 @@ export default defineConfig({
       manifest: {
         name: 'Laito – écrire et partager vos livres',
         short_name: 'Laito',
-        description: 'Un carnet d’écriture calme et élégant pour écrire, garder privé ou partager vos livres.',
+        description:
+          'Un carnet d’écriture calme et élégant pour écrire, garder privé ou partager vos livres.',
         lang: 'fr',
         start_url: '/',
         scope: '/',
@@ -33,7 +34,12 @@ export default defineConfig({
         icons: [
           { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/maskable-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: '/maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {
@@ -52,7 +58,8 @@ export default defineConfig({
           {
             urlPattern: ({ url, request }) =>
               request.method === 'GET' &&
-              (url.pathname.startsWith('/api/v1/read/') || url.pathname.startsWith('/api/v1/catalog')),
+              (url.pathname.startsWith('/api/v1/read/') ||
+                url.pathname.startsWith('/api/v1/catalog')),
             handler: 'NetworkFirst',
             options: { cacheName: 'laito-reading', networkTimeoutSeconds: 4 },
           },
@@ -60,7 +67,8 @@ export default defineConfig({
             // Écriture hors ligne : livres, chapitres et contenus déjà ouverts.
             urlPattern: ({ url, request }) =>
               request.method === 'GET' &&
-              (url.pathname.startsWith('/api/v1/books') || url.pathname.startsWith('/api/v1/chapters')),
+              (url.pathname.startsWith('/api/v1/books') ||
+                url.pathname.startsWith('/api/v1/chapters')),
             handler: 'NetworkFirst',
             options: { cacheName: 'laito-writing', networkTimeoutSeconds: 4 },
           },

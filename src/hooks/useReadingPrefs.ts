@@ -19,7 +19,9 @@ function initial(remote?: Partial<ReadingPreferences>): ReadingPreferences {
  */
 export function useReadingPrefs() {
   const { user, updateSettings } = useAuth();
-  const [prefs, setPrefs] = useState<ReadingPreferences>(() => initial(user?.settings.readingPreferences));
+  const [prefs, setPrefs] = useState<ReadingPreferences>(() =>
+    initial(user?.settings.readingPreferences),
+  );
   const [syncedFor, setSyncedFor] = useState(user?.id ?? null);
 
   // Le compte se charge après l'ouverture : on adopte alors ses préférences.
