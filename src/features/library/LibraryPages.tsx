@@ -186,7 +186,7 @@ export function LibraryPage() {
         tabs={[
           { value: 'books', label: 'Mes livres' },
           { value: 'reading', label: 'Mes lectures' },
-          { value: 'shared', label: 'Partagés avec moi' },
+          { value: 'shared', label: 'Partagés' },
         ]}
       />
       {tab === 'books' && <MyBooks />}

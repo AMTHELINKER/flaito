@@ -157,6 +157,14 @@
   border: 1px solid var(--c-glass-border);
   box-shadow: var(--c-shadow-glass);
 }
+/* Menus flottants : verre presque opaque, pour que les éléments dessous ne gênent pas la lecture. */
+@utility glass-strong {
+  background: color-mix(in srgb, var(--c-surface) 94%, transparent);
+  backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+  border: 1px solid var(--c-glass-border);
+  box-shadow: var(--c-shadow-glass);
+}
 /* Version allégée (appareils peu puissants / réduction de transparence). */
 .lite-glass .glass {
   backdrop-filter: none;

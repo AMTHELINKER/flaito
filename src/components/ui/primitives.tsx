@@ -254,7 +254,11 @@ export function Tabs<T extends string>({
   label: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className="glass mb-5 inline-flex rounded-md p-1">
+    <div
+      role="tablist"
+      aria-label={label}
+      className="glass mb-5 inline-flex max-w-full overflow-x-auto rounded-md p-1"
+    >
       {tabs.map((t) => (
         <button
           key={t.value}
@@ -269,7 +273,7 @@ export function Tabs<T extends string>({
           }}
           tabIndex={value === t.value ? 0 : -1}
           className={cx(
-            'pressable min-h-10 rounded-sm px-4 text-sm font-medium',
+            'pressable min-h-10 whitespace-nowrap rounded-sm px-3 text-sm font-medium sm:px-4',
             value === t.value ? 'bg-page text-fg shadow-soft' : 'text-muted hover:text-fg',
           )}
         >

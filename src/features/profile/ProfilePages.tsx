@@ -154,15 +154,6 @@ export function MyProfilePage() {
                 Modifier le profil
               </Button>
             )}
-            {/* Sur mobile, les paramètres ne sont pas dans la barre du bas : accès discret ici. */}
-            <Link
-              to="/parametres"
-              aria-label="Paramètres"
-              title="Paramètres"
-              className="pressable inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-fg/[0.06] md:hidden"
-            >
-              <Icon name="settings" size={20} />
-            </Link>
           </div>
         }
       />

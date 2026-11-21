@@ -22,9 +22,8 @@ import { applyUiFontSize, toUiTheme, type UiTheme } from '@/lib/theme';
 import { READER_THEMES } from '../reader/ReaderSettings';
 
 export function SettingsPage() {
-  const { user, updateSettings, logout } = useAuth();
+  const { user, updateSettings } = useAuth();
   const toast = useToast();
-  const navigate = useNavigate();
   const [prefs, setPrefs] = useReadingPrefs();
   const [deleting, setDeleting] = useState(false);
   const [uiSize, setUiSize] = useState(
@@ -188,16 +187,6 @@ export function SettingsPage() {
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-4">
             <Button variant="secondary" icon="download" onClick={exportData}>
               Exporter mes données
-            </Button>
-            <Button
-              variant="ghost"
-              icon="logOut"
-              onClick={async () => {
-                await logout();
-                navigate('/connexion', { replace: true });
-              }}
-            >
-              Se déconnecter
             </Button>
           </div>
           <Disclosure summary="Supprimer mon compte" className="mt-2">

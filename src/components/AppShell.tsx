@@ -2,20 +2,18 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Icon, type IconName } from './ui/Icon';
 import { cx } from './ui/primitives';
 import { Logo } from './Logo';
-import { useAuth } from '@/auth/AuthProvider';
 import { useOnline } from '@/hooks/useOnline';
 import { InstallPrompt } from './InstallPrompt';
+import { AccountMenu } from './AccountMenu';
 
 const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/', label: 'Accueil', icon: 'home' },
   { to: '/bibliotheque', label: 'Bibliothèque', icon: 'library' },
   { to: '/ecrire', label: 'Écrire', icon: 'pen' },
   { to: '/decouvrir', label: 'Découvrir', icon: 'compass' },
-  { to: '/profil', label: 'Profil', icon: 'user' },
 ];
 
 export function AppShell() {
-  const { user } = useAuth();
   const online = useOnline();
   const location = useLocation();
 
@@ -59,36 +57,27 @@ export function AppShell() {
               <Icon name="cloudOff" size={16} /> Hors ligne
             </p>
           )}
-          <NavLink
-            to="/parametres"
-            className={({ isActive }) =>
-              cx(
-                'pressable flex min-h-11 items-center gap-3 rounded-md px-3 text-sm',
-                isActive ? 'bg-page font-semibold' : 'text-muted hover:text-fg',
-              )
-            }
-          >
-            <Icon name="settings" size={18} />
-            Paramètres
-          </NavLink>
-          {user && (
-            <p className="truncate px-3 pb-1 text-xs text-muted" title={user.email}>
-              {user.profile.displayName}
-            </p>
-          )}
         </div>
       </aside>
 
       {!online && (
-        <div className="glass fixed inset-x-3 top-3 z-40 flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-xs md:hidden">
+        <div className="glass fixed inset-x-3 top-16 z-40 flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-xs md:hidden">
           <Icon name="cloudOff" size={14} /> Hors ligne – vos écrits sont gardés sur l’appareil
         </div>
       )}
 
+      {/* Barre du haut : logo sur mobile, compte toujours en haut à droite. */}
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-3 sm:px-6 md:justify-end md:pt-4">
+        <NavLink to="/" className="md:hidden" aria-label="Laito, accueil">
+          <Logo />
+        </NavLink>
+        <AccountMenu />
+      </header>
+
       <main
         id="contenu"
         key={location.pathname}
-        className="mx-auto max-w-6xl px-4 pb-28 pt-6 animate-fade-in sm:px-6 md:pb-12 md:pt-10"
+        className="mx-auto max-w-6xl px-4 pb-28 pt-2 animate-fade-in sm:px-6 md:pb-12 md:pt-2"
       >
         <Outlet />
       </main>
