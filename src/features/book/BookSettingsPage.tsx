@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   COVER_MAX_BYTES,
@@ -22,11 +22,14 @@ import { ConfirmDialog } from '@/components/ui/Modal';
 import {
   Button,
   Card,
+  Disclosure,
   ErrorNotice,
   IconButton,
   PageHeader,
+  Section,
   SelectField,
   Skeleton,
+  Tabs,
   TextArea,
   TextField,
 } from '@/components/ui/primitives';
@@ -48,6 +51,8 @@ export function BookSettingsPage() {
   return <BookSettingsForm key={book.data.id} book={book.data} />;
 }
 
+type BookTab = 'livre' | 'partage';
+
 function BookSettingsForm({ book }: { book: BookDto }) {
   const qc = useQueryClient();
   const toast = useToast();
@@ -63,6 +68,9 @@ function BookSettingsForm({ book }: { book: BookDto }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [celebrate, setCelebrate] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [params, setParams] = useSearchParams();
+  const tab: BookTab = params.get('onglet') === 'partage' ? 'partage' : 'livre';
+  const setTab = (t: BookTab) => setParams(t === 'livre' ? {} : { onglet: t }, { replace: true });
 
   const setBook = (b: BookDto) => {
     qc.setQueryData(qk.book(b.id), b);
@@ -142,12 +150,19 @@ function BookSettingsForm({ book }: { book: BookDto }) {
     );
   };
 
+  const dirty =
+    form.title !== book.title ||
+    form.summary !== (book.summary ?? '') ||
+    form.genre !== (book.genre ?? '') ||
+    form.tags !== book.tags.join(', ') ||
+    form.status !== book.status;
+
   return (
     <div className="mx-auto max-w-3xl">
       <Celebration trigger={celebrate} />
       <PageHeader
-        title="Réglages du livre"
-        subtitle={book.title}
+        title={book.title}
+        subtitle="Réglages du livre"
         actions={
           <Link to={`/livres/${book.id}/ecrire`}>
             <Button variant="secondary" icon="pen">
@@ -157,57 +172,67 @@ function BookSettingsForm({ book }: { book: BookDto }) {
         }
       />
 
-      <div className="flex flex-col gap-5">
-        <Card as="section" aria-labelledby="s-info">
-          <h2 id="s-info" className="mb-4 text-xl">
-            Informations
-          </h2>
-          <div className="grid gap-5 sm:grid-cols-[10rem_1fr]">
-            <div className="flex flex-col gap-2">
-              <BookCover title={form.title} coverUrl={book.coverUrl} />
-              <input
-                ref={fileRef}
-                type="file"
-                accept={COVER_MIME_TYPES.join(',')}
-                className="sr-only"
-                aria-label="Choisir une couverture"
-                onChange={(e) => {
-                  onCover(e.target.files?.[0]);
-                  e.target.value = '';
-                }}
-              />
-              <Button variant="secondary" size="sm" icon="image" busy={cover.isPending} onClick={() => fileRef.current?.click()}>
-                Couverture
-              </Button>
-              <p className="text-xs text-muted">JPG, PNG ou WebP · 5 Mo max.</p>
-            </div>
-            <form onSubmit={save} className="flex flex-col gap-4">
-              <TextField
-                label="Titre"
-                value={form.title}
-                maxLength={200}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-              <TextArea
-                label="Résumé"
-                rows={4}
-                maxLength={2000}
-                value={form.summary}
-                onChange={(e) => setForm({ ...form, summary: e.target.value })}
-              />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <SelectField label="Genre" value={form.genre} onChange={(e) => setForm({ ...form, genre: e.target.value })}>
-                  <option value="">— Aucun —</option>
-                  {GENRES.map((g) => (
-                    <option key={g} value={g}>
-                      {g[0].toUpperCase() + g.slice(1)}
-                    </option>
-                  ))}
-                </SelectField>
+      {/* Deux onglets plutôt qu'une longue page : on ne présente que les choix utiles à la tâche en cours. */}
+      <Tabs
+        label="Réglages du livre"
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: 'livre', label: 'Le livre' },
+          { value: 'partage', label: 'Partage' },
+        ]}
+      />
+
+      {tab === 'livre' ? (
+        <div role="tabpanel" aria-label="Le livre" className="flex flex-col gap-5 animate-fade-in">
+          <Card as="section" aria-label="Informations">
+            <div className="grid gap-5 sm:grid-cols-[10rem_1fr]">
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="pressable group relative rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  aria-label="Changer la couverture"
+                >
+                  <BookCover title={form.title} coverUrl={book.coverUrl} />
+                  <span className="absolute inset-x-2 bottom-2 flex items-center justify-center gap-1.5 rounded-md bg-ink/70 py-1.5 text-xs text-parchment opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                    <Icon name="image" size={14} /> {cover.isPending ? 'Envoi…' : 'Changer'}
+                  </span>
+                </button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept={COVER_MIME_TYPES.join(',')}
+                  className="sr-only"
+                  tabIndex={-1}
+                  aria-hidden
+                  onChange={(e) => {
+                    onCover(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+                <p className="text-center text-xs text-muted">Couverture · JPG, PNG, WebP · 5 Mo</p>
+              </div>
+              <form onSubmit={save} className="flex flex-col gap-4">
+                <TextField
+                  label="Titre"
+                  value={form.title}
+                  maxLength={200}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
+                <TextArea
+                  label="Résumé"
+                  rows={4}
+                  maxLength={2000}
+                  value={form.summary}
+                  onChange={(e) => setForm({ ...form, summary: e.target.value })}
+                />
                 <SelectField
                   label="Statut"
                   value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value as BookDto['status'] })}
+                  onChange={(e) =>
+                    setForm({ ...form, status: e.target.value as BookDto['status'] })
+                  }
                 >
                   {WRITING_STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -215,48 +240,78 @@ function BookSettingsForm({ book }: { book: BookDto }) {
                     </option>
                   ))}
                 </SelectField>
-              </div>
-              <TextField
-                label="Mots-clés"
-                hint="Séparés par des virgules (10 maximum)."
-                value={form.tags}
-                onChange={(e) => setForm({ ...form, tags: e.target.value })}
-              />
-              <div>
-                <Button type="submit" busy={update.isPending}>
-                  Enregistrer
-                </Button>
-              </div>
-            </form>
+                <Disclosure
+                  summary="Genre et mots-clés"
+                  defaultOpen={!!(book.genre || book.tags.length)}
+                >
+                  <SelectField
+                    label="Genre"
+                    value={form.genre}
+                    onChange={(e) => setForm({ ...form, genre: e.target.value })}
+                  >
+                    <option value="">— Aucun —</option>
+                    {GENRES.map((g) => (
+                      <option key={g} value={g}>
+                        {g[0].toUpperCase() + g.slice(1)}
+                      </option>
+                    ))}
+                  </SelectField>
+                  <TextField
+                    label="Mots-clés"
+                    hint="Séparés par des virgules (10 maximum). Ils aident les lecteurs à trouver votre livre."
+                    value={form.tags}
+                    onChange={(e) => setForm({ ...form, tags: e.target.value })}
+                  />
+                </Disclosure>
+                <div className="flex items-center gap-3">
+                  <Button type="submit" busy={update.isPending} disabled={!dirty}>
+                    Enregistrer
+                  </Button>
+                  {dirty && (
+                    <span className="text-sm text-muted">Modifications non enregistrées</span>
+                  )}
+                </div>
+              </form>
+            </div>
+          </Card>
+
+          <div className="flex justify-end">
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="trash"
+              className="text-danger"
+              onClick={() => setConfirmDelete(true)}
+            >
+              Supprimer ce livre
+            </Button>
           </div>
-        </Card>
+        </div>
+      ) : (
+        <div role="tabpanel" aria-label="Partage" className="flex flex-col gap-5 animate-fade-in">
+          <Section
+            id="s-vis"
+            title="Qui peut lire ce livre ?"
+            description="Un chapitre privé reste privé, même dans un livre public."
+            aside={<VisibilityBadge value={book.visibility} />}
+          >
+            <VisibilityPicker
+              name="book-visibility"
+              value={book.visibility}
+              onChange={setVisibility}
+              disabled={update.isPending}
+            />
+          </Section>
 
-        <Card as="section" aria-labelledby="s-vis">
-          <div className="mb-1 flex items-center justify-between gap-2">
-            <h2 id="s-vis" className="text-xl">
-              Qui peut lire ce livre ?
-            </h2>
-            <VisibilityBadge value={book.visibility} />
-          </div>
-          <p className="mb-4 text-sm text-muted">
-            Chaque chapitre a aussi sa propre visibilité (dans l’éditeur) : un chapitre privé reste privé, même dans un livre public.
-          </p>
-          <VisibilityPicker name="book-visibility" value={book.visibility} onChange={setVisibility} disabled={update.isPending} />
-        </Card>
-
-        <ShareLinks resourceType="book" resourceId={book.id} />
-        <Invitations resourceType="book" resourceId={book.id} />
-
-        <Card as="section" aria-labelledby="s-danger" className="border-danger/30">
-          <h2 id="s-danger" className="mb-2 text-xl">
-            Supprimer le livre
-          </h2>
-          <p className="mb-4 text-sm text-muted">Le livre et ses chapitres disparaîtront de votre bibliothèque et des liens de partage.</p>
-          <Button variant="danger" icon="trash" onClick={() => setConfirmDelete(true)}>
-            Supprimer ce livre
-          </Button>
-        </Card>
-      </div>
+          {/* Les liens ne servent qu'en « Lien privé » : on ne les montre que dans ce cas. */}
+          <ShareLinks
+            resourceType="book"
+            resourceId={book.id}
+            visible={book.visibility === 'link'}
+          />
+          <Invitations resourceType="book" resourceId={book.id} />
+        </div>
+      )}
 
       <ConfirmDialog
         open={!!pendingPublic}
@@ -272,7 +327,9 @@ function BookSettingsForm({ book }: { book: BookDto }) {
       <ConfirmDialog
         open={confirmDelete}
         title="Supprimer ce livre ?"
-        message={<>« {book.title} » sera supprimé. Vous pourrez annuler pendant quelques secondes.</>}
+        message={
+          <>« {book.title} » sera supprimé. Vous pourrez annuler pendant quelques secondes.</>
+        }
         confirmLabel="Supprimer"
         danger
         onConfirm={remove}
@@ -283,11 +340,22 @@ function BookSettingsForm({ book }: { book: BookDto }) {
 }
 
 // ───────────────────────── Liens de partage ─────────────────────────
-function ShareLinks({ resourceType, resourceId }: { resourceType: ResourceType; resourceId: string }) {
+function ShareLinks({
+  resourceType,
+  resourceId,
+  visible,
+}: {
+  resourceType: ResourceType;
+  resourceId: string;
+  visible: boolean;
+}) {
   const qc = useQueryClient();
   const toast = useToast();
   const key = qk.shareLinks(resourceType, resourceId);
-  const links = useQuery({ queryKey: key, queryFn: () => shareApi.links(resourceType, resourceId) });
+  const links = useQuery({
+    queryKey: key,
+    queryFn: () => shareApi.links(resourceType, resourceId),
+  });
   const [expiry, setExpiry] = useState<'never' | '1' | '7' | '30'>('never');
 
   const create = useMutation({
@@ -295,7 +363,10 @@ function ShareLinks({ resourceType, resourceId }: { resourceType: ResourceType; 
       shareApi.createLink({
         resourceType,
         resourceId,
-        expiresAt: expiry === 'never' ? null : new Date(Date.now() + Number(expiry) * 86400000).toISOString(),
+        expiresAt:
+          expiry === 'never'
+            ? null
+            : new Date(Date.now() + Number(expiry) * 86400000).toISOString(),
       }),
     onSuccess: async (l) => {
       void qc.invalidateQueries({ queryKey: key });
@@ -321,65 +392,98 @@ function ShareLinks({ resourceType, resourceId }: { resourceType: ResourceType; 
     }
   };
 
-  const active = (links.data ?? []).filter((l) => !l.revokedAt && (!l.expiresAt || new Date(l.expiresAt) > new Date()));
+  const active = (links.data ?? []).filter(
+    (l) => !l.revokedAt && (!l.expiresAt || new Date(l.expiresAt) > new Date()),
+  );
+
+  // Masqué hors « Lien privé », sauf s'il reste des liens actifs à révoquer.
+  if (!visible && !active.length) return null;
 
   return (
-    <Card as="section" aria-labelledby="s-links">
-      <h2 id="s-links" className="mb-1 text-xl">
-        Liens privés
-      </h2>
-      <p className="mb-4 text-sm text-muted">
-        Toute personne disposant d’un lien peut lire, sans compte. Révoquez-le à tout moment.
-      </p>
-      <div className="mb-4 flex flex-wrap items-end gap-3">
-        <SelectField label="Expiration" value={expiry} onChange={(e) => setExpiry(e.target.value as typeof expiry)} className="w-44">
-          <option value="never">Jamais</option>
-          <option value="1">Dans 24 heures</option>
-          <option value="7">Dans 7 jours</option>
-          <option value="30">Dans 30 jours</option>
-        </SelectField>
-        <Button icon="link" busy={create.isPending} onClick={() => create.mutate()}>
-          Créer un lien
-        </Button>
-      </div>
+    <Section
+      id="s-links"
+      title="Liens privés"
+      description="Toute personne disposant d’un lien peut lire, sans compte. Révocable à tout moment."
+    >
       {links.isLoading ? (
         <Skeleton className="h-12" />
-      ) : active.length ? (
-        <ul className="flex flex-col gap-2">
-          {active.map((l) => (
-            <li key={l.id} className="flex items-center gap-2 rounded-md border border-line bg-page/70 p-2 pl-3">
-              <Icon name="link" size={16} className="shrink-0 text-muted" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-mono text-xs">{l.url}</p>
-                <p className="text-xs text-muted">
-                  Créé le {formatDate(l.createdAt)} · {l.expiresAt ? `expire le ${formatDate(l.expiresAt)}` : 'sans expiration'}
-                </p>
-              </div>
-              <IconButton icon="copy" label="Copier le lien" onClick={() => copy(l.url)} />
-              <IconButton icon="x" label="Révoquer le lien" onClick={() => revoke.mutate(l.id)} />
-            </li>
-          ))}
-        </ul>
       ) : (
-        <p className="text-sm text-muted">Aucun lien actif.</p>
+        !!active.length && (
+          <ul className="mb-4 flex flex-col gap-2">
+            {active.map((l) => (
+              <li
+                key={l.id}
+                className="flex items-center gap-2 rounded-md border border-line bg-page/70 p-2 pl-3"
+              >
+                <Icon name="link" size={16} className="shrink-0 text-muted" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-mono text-xs">{l.url}</p>
+                  <p className="text-xs text-muted">
+                    {l.expiresAt ? `Expire le ${formatDate(l.expiresAt)}` : 'Sans expiration'}
+                  </p>
+                </div>
+                <IconButton icon="copy" label="Copier le lien" onClick={() => copy(l.url)} />
+                <IconButton icon="x" label="Révoquer le lien" onClick={() => revoke.mutate(l.id)} />
+              </li>
+            ))}
+          </ul>
+        )
       )}
-    </Card>
+      {visible && (
+        <div className="flex flex-wrap items-end gap-3">
+          <SelectField
+            label="Expiration"
+            value={expiry}
+            onChange={(e) => setExpiry(e.target.value as typeof expiry)}
+            className="w-44"
+          >
+            <option value="never">Jamais</option>
+            <option value="1">Dans 24 heures</option>
+            <option value="7">Dans 7 jours</option>
+            <option value="30">Dans 30 jours</option>
+          </SelectField>
+          <Button
+            variant="secondary"
+            icon="link"
+            busy={create.isPending}
+            onClick={() => create.mutate()}
+          >
+            {active.length ? 'Nouveau lien' : 'Créer et copier un lien'}
+          </Button>
+        </div>
+      )}
+    </Section>
   );
 }
 
 // ───────────────────────── Invitations ─────────────────────────
-function Invitations({ resourceType, resourceId }: { resourceType: ResourceType; resourceId: string }) {
+function Invitations({
+  resourceType,
+  resourceId,
+}: {
+  resourceType: ResourceType;
+  resourceId: string;
+}) {
   const qc = useQueryClient();
   const toast = useToast();
   const key = qk.grants(resourceType, resourceId);
-  const grants = useQuery({ queryKey: key, queryFn: () => shareApi.grants(resourceType, resourceId) });
+  const grants = useQuery({
+    queryKey: key,
+    queryFn: () => shareApi.grants(resourceType, resourceId),
+  });
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => setError(null), [username]);
 
   const invite = useMutation({
-    mutationFn: () => shareApi.createGrant({ resourceType, resourceId, username: username.trim().replace(/^@/, ''), permission: 'read' }),
+    mutationFn: () =>
+      shareApi.createGrant({
+        resourceType,
+        resourceId,
+        username: username.trim().replace(/^@/, ''),
+        permission: 'read',
+      }),
     onSuccess: (g) => {
       setUsername('');
       void qc.invalidateQueries({ queryKey: key });
@@ -397,13 +501,40 @@ function Invitations({ resourceType, resourceId }: { resourceType: ResourceType;
   });
 
   return (
-    <Card as="section" aria-labelledby="s-inv">
-      <h2 id="s-inv" className="mb-1 text-xl">
-        Lecteurs invités
-      </h2>
-      <p className="mb-4 text-sm text-muted">Invitez des lecteurs précis par leur pseudo, quelle que soit la visibilité.</p>
+    <Section
+      id="s-inv"
+      title="Lecteurs invités"
+      description="Ouvrez ce livre à des personnes précises, quelle que soit sa visibilité."
+    >
+      {grants.isLoading ? (
+        <Skeleton className="mb-4 h-12" />
+      ) : (
+        !!grants.data?.length && (
+          <ul className="mb-4 flex flex-col gap-2">
+            {grants.data.map((g) => (
+              <li
+                key={g.id}
+                className="flex items-center gap-3 rounded-md border border-line bg-page/70 p-2 pl-3"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface font-serif">
+                  {g.grantee.displayName[0]?.toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{g.grantee.displayName}</p>
+                  <p className="text-xs text-muted">@{g.grantee.username}</p>
+                </div>
+                <IconButton
+                  icon="x"
+                  label={`Retirer l’accès de ${g.grantee.displayName}`}
+                  onClick={() => remove.mutate(g.id)}
+                />
+              </li>
+            ))}
+          </ul>
+        )
+      )}
       <form
-        className="mb-4 flex flex-wrap items-start gap-3"
+        className="flex flex-wrap items-start gap-3"
         onSubmit={(e) => {
           e.preventDefault();
           if (username.trim()) invite.mutate();
@@ -417,30 +548,17 @@ function Invitations({ resourceType, resourceId }: { resourceType: ResourceType;
           error={error}
           className="min-w-56 flex-1"
         />
-        <Button type="submit" icon="users" busy={invite.isPending} className="sm:mt-7">
+        <Button
+          type="submit"
+          variant="secondary"
+          icon="users"
+          busy={invite.isPending}
+          disabled={!username.trim()}
+          className="sm:mt-7"
+        >
           Inviter
         </Button>
       </form>
-      {grants.isLoading ? (
-        <Skeleton className="h-12" />
-      ) : grants.data?.length ? (
-        <ul className="flex flex-col gap-2">
-          {grants.data.map((g) => (
-            <li key={g.id} className="flex items-center gap-3 rounded-md border border-line bg-page/70 p-2 pl-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface font-serif">
-                {g.grantee.displayName[0]?.toUpperCase()}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{g.grantee.displayName}</p>
-                <p className="text-xs text-muted">@{g.grantee.username}</p>
-              </div>
-              <IconButton icon="x" label={`Retirer l’accès de ${g.grantee.displayName}`} onClick={() => remove.mutate(g.id)} />
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-muted">Personne n’a été invité pour l’instant.</p>
-      )}
-    </Card>
+    </Section>
   );
 }

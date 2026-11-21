@@ -181,12 +181,6 @@ export function ChapterSidebar({
         <Button variant="secondary" icon="plus" onClick={onAdd} busy={adding}>
           Nouveau chapitre
         </Button>
-        <Link
-          to={`/lire/${bookId}`}
-          className="pressable inline-flex min-h-10 items-center justify-center gap-2 rounded-md text-sm text-muted hover:text-fg"
-        >
-          <Icon name="eye" size={16} /> Aperçu lecteur
-        </Link>
       </div>
     </div>
   );
@@ -243,8 +237,17 @@ function ChapterMenu({
     };
   }, [onClose]);
   return (
-    <div ref={ref} role="menu" className="glass absolute right-0 top-11 z-30 flex w-60 flex-col gap-2 rounded-lg p-3 text-sm animate-rise">
-      <button type="button" role="menuitem" onClick={onRename} className="pressable flex min-h-10 items-center gap-2 rounded-sm px-2 hover:bg-fg/[0.06]">
+    <div
+      ref={ref}
+      role="menu"
+      className="glass absolute right-0 top-11 z-30 flex w-60 flex-col gap-2 rounded-lg p-3 text-sm animate-rise"
+    >
+      <button
+        type="button"
+        role="menuitem"
+        onClick={onRename}
+        className="pressable flex min-h-10 items-center gap-2 rounded-sm px-2 hover:bg-fg/[0.06]"
+      >
         <Icon name="edit" size={16} /> Renommer
       </button>
       <label className="flex flex-col gap-1 px-2">

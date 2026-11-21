@@ -1,8 +1,13 @@
 import { useEffect, useRef } from 'react';
 import type { ReadingPreferences } from '@laito/shared';
-import { IconButton, Switch, cx } from '@/components/ui/primitives';
+import { IconButton, Switch, cx, Disclosure } from '@/components/ui/primitives';
 
-export const READER_THEMES: { value: ReadingPreferences['theme']; label: string; bg: string; fg: string }[] = [
+export const READER_THEMES: {
+  value: ReadingPreferences['theme'];
+  label: string;
+  bg: string;
+  fg: string;
+}[] = [
   { value: 'parchment', label: 'Parchemin', bg: '#F7EFDF', fg: '#3E2A1E' },
   { value: 'light', label: 'Papier clair', bg: '#FFFDF9', fg: '#2B2622' },
   { value: 'sepia', label: 'Sépia', bg: '#EFDFC2', fg: '#3B2716' },
@@ -28,7 +33,9 @@ function Segmented<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-1.5 text-xs font-medium uppercase tracking-wider opacity-75">{label}</legend>
+      <legend className="mb-1.5 text-xs font-medium uppercase tracking-wider opacity-75">
+        {label}
+      </legend>
       <div className="flex gap-1 rounded-md bg-black/5 p-1">
         {options.map((o) => (
           <label
@@ -38,7 +45,12 @@ function Segmented<T extends string>({
               value === o.value ? 'bg-[var(--r-page)] font-semibold shadow-sm' : 'opacity-80',
             )}
           >
-            <input type="radio" className="sr-only" checked={value === o.value} onChange={() => onChange(o.value)} />
+            <input
+              type="radio"
+              className="sr-only"
+              checked={value === o.value}
+              onChange={() => onChange(o.value)}
+            />
             {o.label}
           </label>
         ))}
@@ -71,14 +83,24 @@ export function ReaderSettings({
     >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg">Lecture</h2>
-        <IconButton icon="x" label="Fermer les réglages" onClick={onClose} className="text-[inherit]" />
+        <IconButton
+          icon="x"
+          label="Fermer les réglages"
+          onClick={onClose}
+          className="text-[inherit]"
+        />
       </div>
       <div className="flex flex-col gap-4">
         <fieldset>
-          <legend className="mb-1.5 text-xs font-medium uppercase tracking-wider opacity-75">Thème</legend>
+          <legend className="mb-1.5 text-xs font-medium uppercase tracking-wider opacity-75">
+            Thème
+          </legend>
           <div className="grid grid-cols-4 gap-2">
             {READER_THEMES.map((t) => (
-              <label key={t.value} className="flex cursor-pointer flex-col items-center gap-1 text-xs">
+              <label
+                key={t.value}
+                className="flex cursor-pointer flex-col items-center gap-1 text-xs"
+              >
                 <input
                   type="radio"
                   name="reader-theme"
@@ -89,37 +111,15 @@ export function ReaderSettings({
                 <span
                   className={cx(
                     'pressable flex h-11 w-full items-center justify-center rounded-md border font-serif text-base peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--r-ornament)]',
-                    prefs.theme === t.value ? 'border-[var(--r-ornament)] ring-1 ring-[var(--r-ornament)]' : 'border-black/10',
+                    prefs.theme === t.value
+                      ? 'border-[var(--r-ornament)] ring-1 ring-[var(--r-ornament)]'
+                      : 'border-black/10',
                   )}
                   style={{ background: t.bg, color: t.fg }}
                 >
                   Aa
                 </span>
                 {t.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className="mb-1.5 text-xs font-medium uppercase tracking-wider opacity-75">Police</legend>
-          <div className="flex gap-1 rounded-md bg-black/5 p-1">
-            {FONTS.map((f) => (
-              <label
-                key={f.value}
-                className={cx(
-                  'pressable flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-sm',
-                  prefs.fontFamily === f.value ? 'bg-[var(--r-page)] font-semibold shadow-sm' : 'opacity-80',
-                )}
-                style={{ fontFamily: f.css }}
-              >
-                <input
-                  type="radio"
-                  className="sr-only"
-                  checked={prefs.fontFamily === f.value}
-                  onChange={() => onChange({ fontFamily: f.value })}
-                />
-                {f.label}
               </label>
             ))}
           </div>
@@ -140,33 +140,8 @@ export function ReaderSettings({
           />
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="flex justify-between text-xs font-medium uppercase tracking-wider opacity-75">
-            Interligne <span className="tabular-nums">{prefs.lineHeight.toFixed(1)}</span>
-          </span>
-          <input
-            type="range"
-            min={1.3}
-            max={2.2}
-            step={0.1}
-            value={prefs.lineHeight}
-            onChange={(e) => onChange({ lineHeight: Number(e.target.value) })}
-            className="h-11 accent-[var(--r-ornament)]"
-          />
-        </label>
-
         <Segmented
-          label="Marges"
-          value={prefs.margin}
-          onChange={(margin) => onChange({ margin })}
-          options={[
-            { value: 'narrow', label: 'Étroites' },
-            { value: 'normal', label: 'Normales' },
-            { value: 'wide', label: 'Larges' },
-          ]}
-        />
-        <Segmented
-          label="Mode"
+          label="Mise en page"
           value={prefs.mode}
           onChange={(mode) => onChange({ mode })}
           options={[
@@ -174,7 +149,66 @@ export function ReaderSettings({
             { value: 'paged', label: 'Pages' },
           ]}
         />
-        <Switch checked={prefs.justify} onChange={(justify) => onChange({ justify })} label="Texte justifié" />
+        {/* Réglages fins repliés : l'essentiel (thème, taille, mise en page) reste à portée d'un geste. */}
+        <Disclosure summary="Plus de réglages" summaryClassName="text-[inherit] opacity-85">
+          <fieldset>
+            <legend className="mb-1.5 text-xs font-medium uppercase tracking-wider opacity-75">
+              Police
+            </legend>
+            <div className="flex gap-1 rounded-md bg-black/5 p-1">
+              {FONTS.map((f) => (
+                <label
+                  key={f.value}
+                  className={cx(
+                    'pressable flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-sm',
+                    prefs.fontFamily === f.value
+                      ? 'bg-[var(--r-page)] font-semibold shadow-sm'
+                      : 'opacity-80',
+                  )}
+                  style={{ fontFamily: f.css }}
+                >
+                  <input
+                    type="radio"
+                    className="sr-only"
+                    checked={prefs.fontFamily === f.value}
+                    onChange={() => onChange({ fontFamily: f.value })}
+                  />
+                  {f.label}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <label className="flex flex-col gap-1.5">
+            <span className="flex justify-between text-xs font-medium uppercase tracking-wider opacity-75">
+              Interligne <span className="tabular-nums">{prefs.lineHeight.toFixed(1)}</span>
+            </span>
+            <input
+              type="range"
+              min={1.3}
+              max={2.2}
+              step={0.1}
+              value={prefs.lineHeight}
+              onChange={(e) => onChange({ lineHeight: Number(e.target.value) })}
+              className="h-11 accent-[var(--r-ornament)]"
+            />
+          </label>
+
+          <Segmented
+            label="Marges"
+            value={prefs.margin}
+            onChange={(margin) => onChange({ margin })}
+            options={[
+              { value: 'narrow', label: 'Étroites' },
+              { value: 'normal', label: 'Normales' },
+              { value: 'wide', label: 'Larges' },
+            ]}
+          />
+          <Switch
+            checked={prefs.justify}
+            onChange={(justify) => onChange({ justify })}
+            label="Texte justifié"
+          />
+        </Disclosure>
       </div>
     </div>
   );

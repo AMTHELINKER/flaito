@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { countWords, readingMinutes, type ChapterDto, type UpdateChapterRequest } from '@laito/shared';
+import {
+  countWords,
+  readingMinutes,
+  type ChapterDto,
+  type UpdateChapterRequest,
+} from '@laito/shared';
 import { ApiRequestError, errorMessage, sendKeepalive } from '@/api/client';
 import { booksApi, chaptersApi, qk } from '@/api/endpoints';
 import { Celebration } from '@/components/Celebration';
@@ -34,7 +39,10 @@ export function EditorPage() {
   const toast = useToast();
 
   const book = useQuery({ queryKey: qk.book(bookId), queryFn: () => booksApi.get(bookId) });
-  const chapters = useQuery({ queryKey: qk.chapters(bookId), queryFn: () => booksApi.chapters(bookId) });
+  const chapters = useQuery({
+    queryKey: qk.chapters(bookId),
+    queryFn: () => booksApi.chapters(bookId),
+  });
 
   const [sidebar, setSidebar] = useState(() => readLocal('laito.editor.sidebar', true));
   const [mobileList, setMobileList] = useState(false);
@@ -54,7 +62,8 @@ export function EditorPage() {
   );
 
   const addChapter = useMutation({
-    mutationFn: () => booksApi.createChapter(bookId, { title: `Chapitre ${(chapters.data?.length ?? 0) + 1}` }),
+    mutationFn: () =>
+      booksApi.createChapter(bookId, { title: `Chapitre ${(chapters.data?.length ?? 0) + 1}` }),
     onSuccess: (ch) => {
       setChapters((xs) => [...xs, ch]);
       void qc.invalidateQueries({ queryKey: qk.myBooks });
@@ -108,9 +117,12 @@ export function EditorPage() {
     const remaining = prev.filter((c) => c.id !== ch.id);
     setChapters(() => remaining);
     if (ch.id === chapterId) {
-      navigate(remaining[0] ? `/livres/${bookId}/ecrire/${remaining[0].id}` : `/livres/${bookId}/ecrire`, {
-        replace: true,
-      });
+      navigate(
+        remaining[0] ? `/livres/${bookId}/ecrire/${remaining[0].id}` : `/livres/${bookId}/ecrire`,
+        {
+          replace: true,
+        },
+      );
     }
     toast.undoable(
       `« ${ch.title} » supprimé.`,
@@ -182,7 +194,8 @@ export function EditorPage() {
 
   // Pas de chapitre choisi : on ouvre le premier (ou on en crée un).
   if (!chapterId && chapters.data) {
-    if (chapters.data.length) return <Navigate to={`/livres/${bookId}/ecrire/${chapters.data[0].id}`} replace />;
+    if (chapters.data.length)
+      return <Navigate to={`/livres/${bookId}/ecrire/${chapters.data[0].id}`} replace />;
     return <CreateFirstChapter bookId={bookId} />;
   }
 
@@ -222,13 +235,15 @@ export function EditorPage() {
       {/* Tiroir mobile */}
       {mobileList && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <button type="button" aria-label="Fermer" className="absolute inset-0 bg-ink/30" onClick={() => setMobileList(false)} />
+          <button
+            type="button"
+            aria-label="Fermer"
+            className="absolute inset-0 bg-ink/30"
+            onClick={() => setMobileList(false)}
+          />
           <div className="glass absolute inset-y-2 left-2 w-[min(20rem,85vw)] rounded-xl animate-rise">
             {sidebarEl && (
-              <ChapterSidebar
-                {...sidebarEl.props}
-                onClose={() => setMobileList(false)}
-              />
+              <ChapterSidebar {...sidebarEl.props} onClose={() => setMobileList(false)} />
             )}
           </div>
         </div>
@@ -248,7 +263,12 @@ export function EditorPage() {
           >
             <Icon name="chevronLeft" />
           </Link>
-          <IconButton icon="sidebar" label="Chapitres" className="md:hidden" onClick={() => setMobileList(true)} />
+          <IconButton
+            icon="sidebar"
+            label="Chapitres"
+            className="md:hidden"
+            onClick={() => setMobileList(true)}
+          />
           <IconButton
             icon="sidebar"
             label={sidebar ? 'Masquer les chapitres (Ctrl+\\)' : 'Afficher les chapitres (Ctrl+\\)'}
@@ -300,7 +320,8 @@ export function EditorPage() {
         title="Supprimer ce chapitre ?"
         message={
           <>
-            « {toDelete?.title} » et son texte seront supprimés. Vous pourrez annuler pendant quelques secondes.
+            « {toDelete?.title} » et son texte seront supprimés. Vous pourrez annuler pendant
+            quelques secondes.
           </>
         }
         confirmLabel="Supprimer"
@@ -371,7 +392,9 @@ function ChapterWriter({
         if (e instanceof ApiRequestError && e.status === 409) {
           // La version distante a changé : la version de cet appareil fait foi.
           res = await chaptersApi.saveContent(id, { content: value });
-          toast.show('Une version plus récente existait ailleurs ; votre texte actuel a été conservé.');
+          toast.show(
+            'Une version plus récente existait ailleurs ; votre texte actuel a été conservé.',
+          );
         } else throw e;
       }
       version.current = res.version;
@@ -381,7 +404,13 @@ function ChapterWriter({
         xs?.map((c) => (c.id === id ? { ...c, wordCount: words } : c)),
       );
     },
-    onLocalChange: (value) => void drafts.put({ chapterId: id, content: value, baseVersion: version.current, updatedAt: Date.now() }),
+    onLocalChange: (value) =>
+      void drafts.put({
+        chapterId: id,
+        content: value,
+        baseVersion: version.current,
+        updatedAt: Date.now(),
+      }),
     onUnload: (value) => sendKeepalive(`/chapters/${id}/content`, 'PUT', { content: value }),
   });
 
@@ -483,7 +512,9 @@ function ChapterWriter({
             error={
               online
                 ? content.error
-                : new Error('Ce chapitre n’a pas encore été ouvert sur cet appareil : il sera disponible au retour de la connexion.')
+                : new Error(
+                    'Ce chapitre n’a pas encore été ouvert sur cet appareil : il sera disponible au retour de la connexion.',
+                  )
             }
             onRetry={() => content.refetch()}
           />
@@ -495,22 +526,38 @@ function ChapterWriter({
 
   return (
     <div className="flex min-h-full flex-col">
-      <div ref={wrap} className="relative mx-auto w-full max-w-[72ch] flex-1 px-4 pb-24 pt-4 sm:px-8 md:pt-10">
+      <div
+        ref={wrap}
+        className="relative mx-auto w-full max-w-[72ch] flex-1 px-4 pb-24 pt-4 sm:px-8 md:pt-10"
+      >
         <div className="page rounded-lg px-5 py-8 sm:px-12 sm:py-12">
           <label htmlFor="chapter-title" className="sr-only">
             Titre du chapitre
           </label>
-          <input
+          {/* Zone multiligne : un titre long passe à la ligne au lieu d'être coupé (mobile). */}
+          <textarea
             id="chapter-title"
+            rows={1}
             value={title}
             maxLength={200}
             onChange={(e) => {
-              setTitle(e.target.value);
-              debouncedTitle.call(e.target.value);
+              const v = e.target.value.replace(/\n/g, ' ');
+              setTitle(v);
+              debouncedTitle.call(v);
+              autoGrow(e.currentTarget);
+            }}
+            ref={(el) => {
+              if (el) autoGrow(el);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                ta.current?.focus();
+              }
             }}
             onBlur={() => debouncedTitle.flush()}
             placeholder="Titre du chapitre"
-            className="mb-6 w-full bg-transparent font-serif text-3xl font-semibold text-fg placeholder:text-muted/60 focus:outline-none"
+            className="mb-6 block w-full resize-none overflow-hidden bg-transparent font-serif text-2xl font-semibold leading-tight text-fg placeholder:text-muted/60 focus:outline-none sm:text-3xl"
           />
           <label htmlFor="chapter-text" className="sr-only">
             Texte du chapitre
@@ -543,13 +590,16 @@ function ChapterWriter({
             }}
             className={cx(
               'block w-full resize-none bg-transparent font-serif text-[1.15rem] leading-[1.8] text-fg placeholder:text-muted/60 focus:outline-none',
-              focusMode ? 'h-[calc(100dvh-18rem)] overflow-y-auto py-[30vh]' : 'min-h-[50vh] overflow-hidden',
+              focusMode
+                ? 'h-[calc(100dvh-18rem)] overflow-y-auto py-[30vh]'
+                : 'min-h-[50vh] overflow-hidden',
             )}
             style={
               focusMode
                 ? {
                     maskImage: 'linear-gradient(transparent, #000 38%, #000 62%, transparent)',
-                    WebkitMaskImage: 'linear-gradient(transparent, #000 38%, #000 62%, transparent)',
+                    WebkitMaskImage:
+                      'linear-gradient(transparent, #000 38%, #000 62%, transparent)',
                   }
                 : undefined
             }
@@ -558,12 +608,20 @@ function ChapterWriter({
         <FormatToolbar pos={toolbar} onAction={format} />
       </div>
       <footer className="pointer-events-none sticky bottom-0 flex justify-center pb-3">
-        <p className="glass pointer-events-auto rounded-full px-3 py-1 text-xs text-muted" aria-live="off">
+        <p
+          className="glass pointer-events-auto rounded-full px-3 py-1 text-xs text-muted"
+          aria-live="off"
+        >
           {formatWords(words)} · ≈ {readingMinutes(words)} min de lecture
         </p>
       </footer>
     </div>
   );
+}
+
+function autoGrow(el: HTMLTextAreaElement) {
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
 }
 
 /** Mode concentration : garde la ligne en cours au centre (le reste est estompé par un masque). */
@@ -574,7 +632,10 @@ function centerCaret(el: HTMLTextAreaElement) {
 }
 
 function SaveIndicator({ status }: { status: SaveStatus }) {
-  const map: Record<SaveStatus, { text: string; icon: 'check' | 'cloud' | 'cloudOff'; tone?: string }> = {
+  const map: Record<
+    SaveStatus,
+    { text: string; icon: 'check' | 'cloud' | 'cloudOff'; tone?: string }
+  > = {
     idle: { text: '', icon: 'cloud' },
     dirty: { text: 'Modifications…', icon: 'cloud' },
     saving: { text: 'Enregistrement…', icon: 'cloud' },
@@ -587,10 +648,17 @@ function SaveIndicator({ status }: { status: SaveStatus }) {
   return (
     <span
       role="status"
-      className={cx('inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-muted', m.tone)}
+      className={cx(
+        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-muted',
+        m.tone,
+      )}
       title={m.text}
     >
-      <Icon name={m.icon} size={14} className={status === 'saved' ? 'text-accent-text' : undefined} />
+      <Icon
+        name={m.icon}
+        size={14}
+        className={status === 'saved' ? 'text-accent-text' : undefined}
+      />
       <span className={cx(status === 'offline' && 'hidden sm:inline')}>{m.text}</span>
     </span>
   );

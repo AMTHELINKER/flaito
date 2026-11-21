@@ -208,7 +208,10 @@ export function EmptyState({
 export function ErrorNotice({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const msg = error instanceof Error ? error.message : 'Une erreur est survenue.';
   return (
-    <div role="alert" className="flex flex-col items-start gap-3 rounded-lg border border-line bg-page p-4">
+    <div
+      role="alert"
+      className="flex flex-col items-start gap-3 rounded-lg border border-line bg-page p-4"
+    >
       <p>{msg}</p>
       {onRetry && (
         <Button variant="secondary" size="sm" onClick={onRetry}>
@@ -304,17 +307,88 @@ export function Switch({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cx(
-          'pressable relative h-7 w-12 shrink-0 rounded-full border border-line transition-colors',
-          checked ? 'bg-accent' : 'bg-surface',
+          'relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border p-0.5 transition-colors duration-200',
+          checked ? 'border-accent bg-accent' : 'border-line bg-surface',
         )}
       >
+        {/* Le curseur est un élément du flux (pas en absolu) : il ne peut pas sortir du rail. */}
         <span
+          aria-hidden
           className={cx(
-            'absolute top-0.5 h-5.5 w-5.5 rounded-full bg-page shadow transition-transform duration-200',
-            checked ? 'translate-x-5.5' : 'translate-x-0.5',
+            'block h-5.5 w-5.5 rounded-full bg-page shadow-soft transition-[margin] duration-200 motion-reduce:transition-none',
+            checked ? 'ml-auto' : 'ml-0',
           )}
         />
       </button>
     </div>
+  );
+}
+
+/**
+ * Divulgation progressive : les réglages secondaires restent repliés
+ * pour ne présenter que l'essentiel (loi de Hick).
+ */
+export function Disclosure({
+  summary,
+  children,
+  defaultOpen,
+  className,
+  summaryClassName = 'text-accent-text',
+}: {
+  summary: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+  className?: string;
+  summaryClassName?: string;
+}) {
+  return (
+    <details className={cx('group', className)} open={defaultOpen}>
+      <summary
+        className={cx(
+          'pressable inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md text-sm font-medium [&::-webkit-details-marker]:hidden',
+          summaryClassName,
+        )}
+      >
+        <Icon
+          name="chevronRight"
+          size={16}
+          className="transition-transform duration-200 group-open:rotate-90 motion-reduce:transition-none"
+        />
+        {summary}
+      </summary>
+      <div className="mt-2 flex flex-col gap-4">{children}</div>
+    </details>
+  );
+}
+
+/** Section d'une carte : titre, phrase d'aide facultative, contenu. */
+export function Section({
+  id,
+  title,
+  description,
+  aside,
+  children,
+  className,
+}: {
+  id: string;
+  title: string;
+  description?: string;
+  aside?: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <Card as="section" aria-labelledby={id} className={className}>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 id={id} className="text-xl">
+            {title}
+          </h2>
+          {description && <p className="mt-1 text-sm text-muted">{description}</p>}
+        </div>
+        {aside}
+      </div>
+      {children}
+    </Card>
   );
 }

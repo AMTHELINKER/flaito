@@ -7,36 +7,48 @@ import { meApi, qk } from '@/api/endpoints';
 import { useAuth } from '@/auth/AuthProvider';
 import { BookCard, BookGrid, BookGridSkeleton } from '@/components/BookCard';
 import { Icon } from '@/components/ui/Icon';
-import { Button, Card, EmptyState, ErrorNotice, Skeleton, TextArea, TextField, cx } from '@/components/ui/primitives';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorNotice,
+  Skeleton,
+  TextArea,
+  TextField,
+  cx,
+} from '@/components/ui/primitives';
+import { Avatar } from '@/components/Avatar';
 import { useToast } from '@/components/ui/Toast';
+import { FriendsSection } from '../social/FriendsSection';
 
-export function Avatar({ profile, size = 80 }: { profile: Pick<ProfileDto, 'displayName' | 'avatarUrl'>; size?: number }) {
-  return profile.avatarUrl ? (
-    <img src={profile.avatarUrl} alt="" width={size} height={size} className="rounded-full object-cover shadow-soft" style={{ width: size, height: size }} />
-  ) : (
-    <span
-      aria-hidden
-      className="flex items-center justify-center rounded-full bg-leather font-serif text-parchment shadow-soft"
-      style={{ width: size, height: size, fontSize: size * 0.42 }}
-    >
-      {profile.displayName[0]?.toUpperCase() ?? '?'}
-    </span>
-  );
-}
-
-function ProfileHeader({ profile, actions }: { profile: ProfileDto; actions?: React.ReactNode }) {
+function ProfileHeader({
+  profile,
+  actions,
+  avatar,
+}: {
+  profile: ProfileDto;
+  actions?: React.ReactNode;
+  avatar?: React.ReactNode;
+}) {
   return (
     <Card className="mb-8 flex flex-col items-center gap-4 p-6 text-center sm:flex-row sm:items-start sm:text-left">
-      <Avatar profile={profile} size={96} />
+      {avatar ?? <Avatar profile={profile} size={96} />}
       <div className="min-w-0 flex-1">
         <h1 className="text-3xl">{profile.displayName}</h1>
         <p className="text-muted">@{profile.username}</p>
-        {profile.bio && <p className="mt-3 max-w-prose whitespace-pre-line font-serif">{profile.bio}</p>}
+        {profile.bio && (
+          <p className="mt-3 max-w-prose whitespace-pre-line font-serif">{profile.bio}</p>
+        )}
         {!!profile.links.length && (
           <ul className="mt-3 flex flex-wrap justify-center gap-3 sm:justify-start">
             {profile.links.map((l) => (
               <li key={l}>
-                <a href={l} target="_blank" rel="noopener noreferrer nofollow" className="inline-flex items-center gap-1 text-sm text-accent-text underline-offset-2 hover:underline">
+                <a
+                  href={l}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="inline-flex items-center gap-1 text-sm text-accent-text underline-offset-2 hover:underline"
+                >
                   <Icon name="link" size={14} />
                   {l.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                 </a>
@@ -53,7 +65,10 @@ function ProfileHeader({ profile, actions }: { profile: ProfileDto; actions?: Re
 // Profil public d'un auteur
 export function PublicProfilePage() {
   const { username = '' } = useParams();
-  const q = useQuery({ queryKey: qk.profile(username), queryFn: () => meApi.publicProfile(username) });
+  const q = useQuery({
+    queryKey: qk.profile(username),
+    queryFn: () => meApi.publicProfile(username),
+  });
   if (q.isLoading)
     return (
       <>
@@ -103,30 +118,50 @@ export function MyProfilePage() {
   if (!user) return null;
   return (
     <>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) avatar.mutate(f);
+          e.target.value = '';
+        }}
+      />
       <ProfileHeader
         profile={user.profile}
+        avatar={
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="pressable group relative rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            aria-label="Changer la photo de profil"
+            aria-busy={avatar.isPending || undefined}
+          >
+            <Avatar profile={user.profile} size={96} />
+            <span className="absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-page text-fg shadow-soft">
+              <Icon name="image" size={16} />
+            </span>
+          </button>
+        }
         actions={
-          <div className="flex flex-col gap-2">
-            <Button variant="secondary" size="sm" icon="edit" onClick={() => setEditing((e) => !e)} aria-expanded={editing}>
-              Modifier
-            </Button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="sr-only"
-              aria-label="Choisir une photo de profil"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) avatar.mutate(f);
-                e.target.value = '';
-              }}
-            />
-            <Button variant="ghost" size="sm" icon="image" busy={avatar.isPending} onClick={() => fileRef.current?.click()}>
-              Photo
-            </Button>
-            <Link to="/parametres" className="pressable inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md px-3 text-sm hover:bg-fg/[0.06]">
-              <Icon name="settings" size={16} /> Paramètres
+          <div className="flex items-center gap-1">
+            {!editing && (
+              <Button variant="secondary" size="sm" icon="edit" onClick={() => setEditing(true)}>
+                Modifier le profil
+              </Button>
+            )}
+            {/* Sur mobile, les paramètres ne sont pas dans la barre du bas : accès discret ici. */}
+            <Link
+              to="/parametres"
+              aria-label="Paramètres"
+              title="Paramètres"
+              className="pressable inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-fg/[0.06] md:hidden"
+            >
+              <Icon name="settings" size={20} />
             </Link>
           </div>
         }
@@ -154,6 +189,10 @@ export function MyProfilePage() {
           }
         />
       )}
+      <div className="mt-10">
+        <FriendsSection />
+      </div>
+
       <p className="mt-10 text-center text-sm">
         <a
           href="mailto:avis@laito.app?subject=Mon%20avis%20sur%20Laito"
@@ -206,9 +245,26 @@ function EditProfile({ profile, onDone }: { profile: ProfileDto; onDone: () => v
           save.mutate();
         }}
       >
-        <TextField label="Nom affiché" value={form.displayName} maxLength={60} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
-        <TextField label="Pseudo" value={form.username} maxLength={30} onChange={(e) => setForm({ ...form, username: e.target.value })} />
-        <TextArea label="Biographie" rows={4} maxLength={1000} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className="sm:col-span-2" />
+        <TextField
+          label="Nom affiché"
+          value={form.displayName}
+          maxLength={60}
+          onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+        />
+        <TextField
+          label="Pseudo"
+          value={form.username}
+          maxLength={30}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
+        />
+        <TextArea
+          label="Biographie"
+          rows={4}
+          maxLength={1000}
+          value={form.bio}
+          onChange={(e) => setForm({ ...form, bio: e.target.value })}
+          className="sm:col-span-2"
+        />
         <TextArea
           label="Liens"
           hint="Un lien par ligne (5 maximum)."
