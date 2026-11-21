@@ -1,0 +1,386 @@
+@import 'tailwindcss';
+
+/* Polices auto-hébergées : disponibles hors ligne via le service worker. */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/literata/latin-400.css';
+@import '@fontsource/literata/latin-400-italic.css';
+@import '@fontsource/literata/latin-600.css';
+@import '@fontsource/lora/latin-400.css';
+@import '@fontsource/lora/latin-400-italic.css';
+@import '@fontsource/lora/latin-600.css';
+
+@custom-variant dark (&:where([data-theme='night'], [data-theme='night'] *));
+
+/* ───────────── Jetons de design (palette brute) ───────────── */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Literata', 'Lora', Georgia, serif;
+  --font-lora: 'Lora', Georgia, serif;
+
+  --color-parchment: #f3e9d7;
+  --color-paper: #e6d3b3;
+  --color-leather: #8b5e3c;
+  --color-ink: #3e2a1e;
+  --color-gold: #b8893b;
+  --color-gold-deep: #7a5a1f;
+
+  /* Espacements : base de 8 px (Tailwind : 1 unité = 4 px → p-2 = 8 px). */
+  --spacing: 0.25rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --blur-glass: 14px;
+
+  --ease-soft: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --animate-fade-in: fade-in 200ms var(--ease-soft);
+  --animate-rise: rise 220ms var(--ease-soft);
+}
+
+/* ───────────── Jetons sémantiques (varient selon le thème) ───────────── */
+@theme inline {
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-page: var(--c-page);
+  --color-fg: var(--c-fg);
+  --color-muted: var(--c-muted);
+  --color-accent: var(--c-accent);
+  --color-accent-fg: var(--c-accent-fg);
+  --color-accent-text: var(--c-accent-text);
+  --color-line: var(--c-line);
+  --color-danger: var(--c-danger);
+  --color-glass: var(--c-glass);
+  --color-glass-border: var(--c-glass-border);
+  --shadow-soft: var(--c-shadow);
+  --shadow-glass: var(--c-shadow-glass);
+}
+
+:root,
+[data-theme='parchment'] {
+  --c-bg: #f3e9d7;
+  --c-surface: #ebdcc2;
+  --c-page: #faf3e6;
+  --c-fg: #3e2a1e;
+  --c-muted: #6b5442; /* 6.0:1 sur parchemin */
+  --c-accent: #b8893b; /* fond des actions */
+  --c-accent-fg: #2a1c13; /* texte sur or : 5.3:1 */
+  --c-accent-text: #7a5a1f; /* or foncé pour texte : 5.2:1 */
+  --c-line: rgb(62 42 30 / 0.14);
+  --c-danger: #9b2c1f;
+  --c-glass: rgb(250 243 230 / 0.58);
+  --c-glass-border: rgb(255 255 255 / 0.55);
+  --c-shadow: 0 1px 2px rgb(62 42 30 / 0.06), 0 6px 20px rgb(62 42 30 / 0.08);
+  --c-shadow-glass: 0 8px 32px rgb(62 42 30 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.5);
+  --c-texture-opacity: 0.05;
+  color-scheme: light;
+}
+
+[data-theme='light'] {
+  --c-bg: #f8f4ec;
+  --c-surface: #efe7d8;
+  --c-page: #fffdf8;
+  --c-glass: rgb(255 253 248 / 0.62);
+  --c-texture-opacity: 0.025;
+}
+
+[data-theme='night'] {
+  --c-bg: #1d1611;
+  --c-surface: #2a2019;
+  --c-page: #231b15;
+  --c-fg: #ecdfc8;
+  --c-muted: #bfab8f;
+  --c-accent: #d0a252;
+  --c-accent-fg: #1d1611;
+  --c-accent-text: #e0b86e;
+  --c-line: rgb(236 223 200 / 0.12);
+  --c-danger: #f08a73;
+  --c-glass: rgb(48 37 29 / 0.55);
+  --c-glass-border: rgb(255 236 210 / 0.12);
+  --c-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 20px rgb(0 0 0 / 0.25);
+  --c-shadow-glass: 0 8px 32px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 236 210 / 0.08);
+  --c-texture-opacity: 0.04;
+  color-scheme: dark;
+}
+
+/* ───────────── Base ───────────── */
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-bg text-fg font-sans antialiased;
+    min-height: 100dvh;
+    transition:
+      background-color 200ms var(--ease-soft),
+      color 200ms var(--ease-soft);
+  }
+  /* Texture de papier très discrète. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--c-texture-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.24 0 0 0 0 0.16 0 0 0 0 0.12 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  #root {
+    position: relative;
+    z-index: 1;
+  }
+  :focus-visible {
+    outline: 2px solid var(--c-accent-text);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: rgb(184 137 59 / 0.35);
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif;
+    text-wrap: balance;
+  }
+}
+
+/* ───────────── Verre dépoli ───────────── */
+@utility glass {
+  background: var(--c-glass);
+  backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+  border: 1px solid var(--c-glass-border);
+  box-shadow: var(--c-shadow-glass);
+}
+/* Version allégée (appareils peu puissants / réduction de transparence). */
+.lite-glass .glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: var(--c-surface);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: var(--c-surface);
+  }
+}
+
+/* Page opaque : le texte des livres n'est jamais posé sur du verre. */
+@utility page {
+  background: var(--c-page);
+  box-shadow: var(--c-shadow);
+}
+
+@utility measure {
+  max-width: 68ch;
+}
+
+/* Bouton : léger enfoncement et reflet de verre. */
+@utility pressable {
+  transition:
+    transform 150ms var(--ease-soft),
+    background-color 150ms var(--ease-soft),
+    box-shadow 150ms var(--ease-soft),
+    opacity 150ms;
+  &:active:not(:disabled) {
+    transform: translateY(1px) scale(0.985);
+  }
+}
+
+/* Squelettes de chargement (shimmer doré, esprit parchemin). */
+@utility skeleton {
+  background: linear-gradient(
+    100deg,
+    var(--c-surface) 30%,
+    color-mix(in srgb, var(--c-surface), var(--c-glass-border) 60%) 50%,
+    var(--c-surface) 70%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes confetti {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+@keyframes page-turn-next {
+  from {
+    opacity: 0.2;
+    transform: translateX(24px) rotateY(-6deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes page-turn-prev {
+  from {
+    opacity: 0.2;
+    transform: translateX(-24px) rotateY(6deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Respect du réglage système « réduire les animations ». */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ───────────── Lecteur ───────────── */
+.reader {
+  --r-bg: #f3e9d7;
+  --r-page: #f7efdf;
+  --r-fg: #3e2a1e;
+  --r-muted: #6b5442;
+  --r-ornament: #8b5e3c;
+}
+.reader[data-reader-theme='light'] {
+  --r-bg: #f4f1ea;
+  --r-page: #fffdf9;
+  --r-fg: #2b2622;
+  --r-muted: #5f574f;
+  --r-ornament: #8b5e3c;
+}
+.reader[data-reader-theme='sepia'] {
+  --r-bg: #e6d3b3;
+  --r-page: #efdfc2;
+  --r-fg: #3b2716;
+  --r-muted: #62482f;
+  --r-ornament: #7a4f2e;
+}
+.reader[data-reader-theme='night'] {
+  --r-bg: #17110d;
+  --r-page: #211912;
+  --r-fg: #e3d3b8;
+  --r-muted: #b09c80;
+  --r-ornament: #c99b52;
+}
+
+.prose-book {
+  font-feature-settings: 'kern', 'liga', 'onum';
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+.prose-book p {
+  margin: 0 0 0.9em;
+}
+.prose-book p + p {
+  text-indent: 1.4em;
+}
+.prose-book p.no-indent,
+.prose-book p[data-align='center'],
+.prose-book p[data-align='right'] {
+  text-indent: 0;
+}
+.prose-book h1,
+.prose-book h2,
+.prose-book h3,
+.prose-book h4 {
+  font-weight: 600;
+  margin: 1.4em 0 0.6em;
+  line-height: 1.25;
+}
+.prose-book h1 {
+  font-size: 1.6em;
+}
+.prose-book h2 {
+  font-size: 1.3em;
+}
+.prose-book h3 {
+  font-size: 1.15em;
+}
+.prose-book h4 {
+  font-size: 1.05em;
+}
+.prose-book blockquote {
+  margin: 1.2em 0;
+  padding-left: 1em;
+  border-left: 2px solid var(--r-ornament, var(--c-accent));
+  font-style: italic;
+  opacity: 0.92;
+}
+.prose-book ul,
+.prose-book ol {
+  margin: 0 0 1em 1.4em;
+}
+.prose-book ul {
+  list-style: disc;
+}
+.prose-book ol {
+  list-style: decimal;
+}
+.prose-book .scene-break {
+  text-align: center;
+  margin: 1.6em 0;
+  color: var(--r-ornament, var(--c-accent-text));
+  letter-spacing: 0.6em;
+  text-indent: 0;
+  user-select: none;
+}
+/* Lettrine décorative en début de chapitre. */
+.prose-book .drop-cap::first-letter {
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.85;
+  padding: 0.06em 0.12em 0 0;
+  color: var(--r-ornament, var(--c-accent-text));
+  font-weight: 600;
+}
+.prose-book mark {
+  background: rgb(184 137 59 / 0.3);
+  color: inherit;
+  border-radius: 2px;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

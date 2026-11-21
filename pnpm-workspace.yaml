@@ -1,0 +1,4 @@
+# Projet unique ; ce fichier sert à autoriser les scripts d'installation (pnpm ≥ 10).
+packages: []
+allowBuilds:
+  esbuild: true

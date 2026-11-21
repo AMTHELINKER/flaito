@@ -1,0 +1,13 @@
+# Sert la PWA construite sur http://localhost:8080.
+# L'API (dépôt blaito) doit tourner sur la machine hôte, port 3000.
+name: laito-web
+
+services:
+  web:
+    build: .
+    ports:
+      - '8080:80'
+    environment:
+      API_UPSTREAM: http://host.docker.internal:3000
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
