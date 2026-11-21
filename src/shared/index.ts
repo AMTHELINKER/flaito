@@ -1,5 +1,9 @@
 /**
- * Types et règles communs à l'API et au front (copie synchronisée avec le dépôt blaito : src/shared).
+ * Types et règles communs à l'API et au front.
+ *
+ * SOURCE DE VÉRITÉ : dépôt blaito, dossier src/shared.
+ * Le front (dépôt flaito) en garde une copie, mise à jour par `pnpm shared:sync`
+ * et contrôlée par sa CI : ne modifiez ces fichiers que dans blaito.
  * Toute réponse de l'API v1 respecte ces formes.
  */
 

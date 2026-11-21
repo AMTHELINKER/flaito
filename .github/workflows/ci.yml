@@ -4,9 +4,23 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Chaque jour : détecte un changement de src/shared poussé dans blaito.
+  schedule:
+    - cron: '0 6 * * *'
 
 jobs:
+  shared:
+    name: src/shared identique à blaito
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/sync-shared.mjs --check
+
   quality:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +37,7 @@ jobs:
 
   docker:
     needs: quality
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

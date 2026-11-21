@@ -1,4 +1,6 @@
 /**
+ * SOURCE DE VÉRITÉ : dépôt blaito (src/shared) — copié dans flaito par `pnpm shared:sync`.
+ *
  * Format du texte des chapitres.
  *
  * Le cahier des charges impose une zone de texte simple (textarea) et un

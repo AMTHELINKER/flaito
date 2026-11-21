@@ -22,6 +22,7 @@ Pour viser une autre API en développement : `VITE_API_PROXY=http://hote:port pn
 | `pnpm lint` / `pnpm typecheck` / `pnpm test` | qualité et tests (Vitest) |
 | `pnpm build` / `pnpm preview` | build de production (PWA, service worker) et aperçu |
 | `pnpm icons` | régénère les icônes PWA |
+| `pnpm shared:sync` / `pnpm shared:check` | récupère / contrôle `src/shared` depuis blaito |
 
 ## Production
 
@@ -47,7 +48,14 @@ src/styles      jetons de design (palette parchemin, mode nuit chaud), effet ver
 
 ## Code partagé avec l'API
 
-`src/shared/` est **une copie identique** du dossier `src/shared/` de blaito (types des réponses, syntaxe du texte, comptage de mots). Toute modification doit être reportée dans les deux dépôts.
+`src/shared/` (types des réponses, syntaxe du texte, comptage de mots) vient de **blaito, qui en est la source de vérité**. Ne le modifiez pas ici :
+
+1. faites la modification dans blaito et poussez-la sur `main` ;
+2. ici, lancez `pnpm shared:sync`, vérifiez avec `pnpm typecheck && pnpm test`, puis commitez.
+
+`pnpm shared:sync` lit `../blaito` s'il existe à côté de ce dépôt (pratique pour tester avant de pousser), sinon la branche `main` de blaito sur GitHub. `SHARED_SOURCE=/chemin/vers/blaito` force un autre clone local.
+
+La CI échoue si la copie diffère de blaito : à chaque push, et chaque jour pour repérer un changement poussé côté API. Seul `src/shared/text.test.ts` est propre à ce dépôt.
 
 ## Format du texte
 
