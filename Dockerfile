@@ -8,7 +8,7 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm build
 
-FROM nginx:1.27-alpine
+FROM nginx:1.29-alpine
 # Adresse de l'API (dépôt blaito) vers laquelle nginx relaie /api et /uploads.
 ENV API_UPSTREAM=http://api:3000
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
