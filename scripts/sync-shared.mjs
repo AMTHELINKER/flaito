@@ -7,7 +7,7 @@
  *
  * Source, par ordre de priorité :
  *   1. SHARED_SOURCE=/chemin/vers/blaito  (clone local, pour tester avant de pousser)
- *   2. ../blaito si ce dossier existe à côté de flaito
+ *   2. ../api (disposition recommandée : api/ et web/ côte à côte), ou ../blaito
  *   3. GitHub : branche SHARED_REF (main par défaut) de AMTHELINKER/blaito
  */
 import { existsSync } from 'node:fs';
@@ -27,8 +27,11 @@ function localSource() {
   if (process.env.SHARED_SOURCE) return resolve(process.env.SHARED_SOURCE);
   // En CI, on compare toujours avec GitHub pour ne pas dépendre d'un dossier voisin.
   if (process.env.CI) return null;
-  const sibling = resolve(root, '..', 'blaito');
-  return existsSync(join(sibling, 'src', 'shared', 'index.ts')) ? sibling : null;
+  for (const name of ['api', 'blaito']) {
+    const sibling = resolve(root, '..', name);
+    if (existsSync(join(sibling, 'src', 'shared', 'index.ts'))) return sibling;
+  }
+  return null;
 }
 
 async function fetchFile(name) {

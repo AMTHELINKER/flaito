@@ -6,7 +6,15 @@ React 18 · TypeScript · Vite · React Router · TanStack Query · Tailwind CSS
 
 ## Démarrer
 
-Prérequis : Node 22, pnpm (`corepack enable`), et l'API blaito lancée sur le port 3000.
+Disposition recommandée : les deux dépôts côte à côte.
+
+```
+laito/
+├── api/   git clone https://github.com/AMTHELINKER/blaito.git api
+└── web/   git clone https://github.com/AMTHELINKER/flaito.git web
+```
+
+Prérequis : Node 22, pnpm (`corepack enable`), et l'API lancée sur le port 3000 (voir le README de `api/`).
 
 ```bash
 pnpm install
@@ -53,7 +61,7 @@ src/styles      jetons de design (palette parchemin, mode nuit chaud), effet ver
 1. faites la modification dans blaito et poussez-la sur `main` ;
 2. ici, lancez `pnpm shared:sync`, vérifiez avec `pnpm typecheck && pnpm test`, puis commitez.
 
-`pnpm shared:sync` lit `../blaito` s'il existe à côté de ce dépôt (pratique pour tester avant de pousser), sinon la branche `main` de blaito sur GitHub. `SHARED_SOURCE=/chemin/vers/blaito` force un autre clone local.
+`pnpm shared:sync` lit le dossier voisin `../api` (ou `../blaito`) s'il existe (pratique pour tester avant de pousser), sinon la branche `main` de blaito sur GitHub. `SHARED_SOURCE=/chemin/vers/blaito` force un autre clone local.
 
 La CI échoue si la copie diffère de blaito : à chaque push, et chaque jour pour repérer un changement poussé côté API. Seul `src/shared/text.test.ts` est propre à ce dépôt.
 
