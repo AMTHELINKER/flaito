@@ -273,6 +273,107 @@ export interface FriendDto {
   direction: 'incoming' | 'outgoing' | 'mutual';
 }
 
+export type PublicProfileDto = Pick<
+  ProfileDto,
+  'userId' | 'username' | 'displayName' | 'avatarUrl'
+>;
+
+// ───────────────────────── Messagerie ─────────────────────────
+
+export const MESSAGE_MAX_LENGTH = 4000;
+export const GROUP_TITLE_MAX_LENGTH = 80;
+export const GROUP_MAX_MEMBERS = 50;
+
+export type ConversationType = 'direct' | 'group';
+export type MemberRole = 'owner' | 'admin' | 'member';
+
+export interface ConversationMemberDto extends PublicProfileDto {
+  role: MemberRole;
+  joinedAt: string;
+}
+
+export interface MessageDto {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  /** Vide si le message a été supprimé. */
+  body: string;
+  createdAt: string;
+  deletedAt: string | null;
+  /** Identifiant choisi par l'expéditeur, pour rapprocher l'envoi optimiste de la réponse. */
+  clientId: string | null;
+}
+
+export interface ConversationDto {
+  id: string;
+  type: ConversationType;
+  /** Titre du groupe ; pour une conversation privée, null (afficher l'autre participant). */
+  title: string | null;
+  members: ConversationMemberDto[];
+  lastMessage: MessageDto | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+  /** Rôle de l'utilisateur courant. */
+  myRole: MemberRole;
+  /** Conversation privée : faux si les deux personnes ne sont plus amies (historique en lecture seule). */
+  canSend: boolean;
+  createdAt: string;
+}
+
+export interface CreateDirectConversationRequest {
+  userId: string;
+}
+
+export interface CreateGroupConversationRequest {
+  title: string;
+  memberIds: string[];
+}
+
+export interface UpdateConversationRequest {
+  title: string;
+}
+
+export interface AddMembersRequest {
+  userIds: string[];
+}
+
+export interface SendMessageRequest {
+  body: string;
+  clientId?: string;
+}
+
+/** Événements temps réel (Socket.IO, espace de noms /messaging). */
+export const MessagingEvents = {
+  MessageNew: 'message:new',
+  MessageDeleted: 'message:deleted',
+  ConversationUpdated: 'conversation:updated',
+  ConversationRemoved: 'conversation:removed',
+  ConversationRead: 'conversation:read',
+  Typing: 'typing',
+  FriendsChanged: 'friends:changed',
+} as const;
+
+export interface MessageNewEvent {
+  conversationId: string;
+  message: MessageDto;
+}
+export interface MessageDeletedEvent {
+  conversationId: string;
+  messageId: string;
+}
+export interface ConversationRemovedEvent {
+  conversationId: string;
+}
+export interface ConversationReadEvent {
+  conversationId: string;
+  userId: string;
+  readAt: string;
+}
+export interface TypingEvent {
+  conversationId: string;
+  userId: string;
+}
+
 // ───────────────────────── Divers ─────────────────────────
 
 export interface Paginated<T> {

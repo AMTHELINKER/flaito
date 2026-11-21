@@ -4,6 +4,7 @@ import type {
   BookDto,
   ChapterContentDto,
   ChapterDto,
+  ConversationDto,
   CreateAccessGrantRequest,
   CreateBookRequest,
   CreateChapterRequest,
@@ -11,8 +12,10 @@ import type {
   FriendDto,
   LoginRequest,
   MeDto,
+  MessageDto,
   Paginated,
   ProfileDto,
+  PublicProfileDto,
   ReadableBookDto,
   ReadableChapterDto,
   ReadingProgressDto,
@@ -52,6 +55,11 @@ export const qk = {
   catalog: (p: object) => ['catalog', p] as const,
   genres: ['catalog', 'genres'] as const,
   profile: (u: string) => ['profiles', u] as const,
+  userSearch: (term: string) => ['users', 'search', term] as const,
+  conversations: ['conversations'] as const,
+  conversation: (id: string) => ['conversations', id] as const,
+  messages: (id: string) => ['conversations', id, 'messages'] as const,
+  unread: ['conversations', 'unread-count'] as const,
 };
 
 export const authApi = {
@@ -159,4 +167,32 @@ export const catalogApi = {
   list: (p: CatalogParams) =>
     api<Paginated<BookDto>>(`/catalog${q(p as Record<string, string | number | undefined>)}`),
   genres: () => api<{ genre: string; count: number }[]>('/catalog/genres'),
+};
+
+export const usersApi = {
+  search: (term: string) => api<PublicProfileDto[]>(`/users/search${q({ q: term })}`),
+};
+
+export const messagingApi = {
+  list: (cursor?: string | null) =>
+    api<Paginated<ConversationDto>>(`/conversations${q({ cursor, limit: 50 })}`),
+  get: (id: string) => api<ConversationDto>(`/conversations/${id}`),
+  unread: () => api<{ count: number }>('/conversations/unread-count'),
+  openDirect: (userId: string) =>
+    api<ConversationDto>('/conversations/direct', { method: 'POST', body: { userId } }),
+  createGroup: (title: string, memberIds: string[]) =>
+    api<ConversationDto>('/conversations/group', { method: 'POST', body: { title, memberIds } }),
+  rename: (id: string, title: string) =>
+    api<ConversationDto>(`/conversations/${id}`, { method: 'PATCH', body: { title } }),
+  addMembers: (id: string, userIds: string[]) =>
+    api<ConversationDto>(`/conversations/${id}/members`, { method: 'POST', body: { userIds } }),
+  removeMember: (id: string, userId: string) =>
+    api<void>(`/conversations/${id}/members/${userId}`, { method: 'DELETE' }),
+  messages: (id: string, before?: string | null) =>
+    api<Paginated<MessageDto>>(`/conversations/${id}/messages${q({ before, limit: 40 })}`),
+  send: (id: string, body: string, clientId: string) =>
+    api<MessageDto>(`/conversations/${id}/messages`, { method: 'POST', body: { body, clientId } }),
+  deleteMessage: (id: string, messageId: string) =>
+    api<void>(`/conversations/${id}/messages/${messageId}`, { method: 'DELETE' }),
+  markRead: (id: string) => api<void>(`/conversations/${id}/read`, { method: 'POST' }),
 };

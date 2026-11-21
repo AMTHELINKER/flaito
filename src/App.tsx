@@ -5,6 +5,7 @@ import { PublicOnly, RequireAuth, SplashScreen, WaitForAuth } from '@/auth/guard
 import { useAuth } from '@/auth/AuthProvider';
 import { useToast } from '@/components/ui/Toast';
 import { syncPendingDrafts } from '@/features/editor/drafts';
+import { MessagingSync } from '@/features/messaging/MessagingSync';
 import {
   ForgotPasswordPage,
   LoginPage,
@@ -36,6 +37,9 @@ const MyProfilePage = lazy(() =>
 const PublicProfilePage = lazy(() =>
   import('@/features/profile/ProfilePages').then((m) => ({ default: m.PublicProfilePage })),
 );
+const MessagesPage = lazy(() =>
+  import('@/features/messaging/MessagesPage').then((m) => ({ default: m.MessagesPage })),
+);
 const ShareLandingPage = lazy(() =>
   import('@/features/share/ShareLandingPage').then((m) => ({ default: m.ShareLandingPage })),
 );
@@ -61,6 +65,7 @@ export function App() {
   return (
     <Suspense fallback={<SplashScreen />}>
       <DraftSync />
+      <MessagingSync />
       <Routes>
         <Route element={<PublicOnly />}>
           <Route path="/bienvenue" element={<OnboardingPage />} />
@@ -90,6 +95,7 @@ export function App() {
             <Route index element={<HomePage />} />
             <Route path="/bibliotheque" element={<LibraryPage />} />
             <Route path="/ecrire" element={<NewBookPage />} />
+            <Route path="/messages/:conversationId?" element={<MessagesPage />} />
             <Route path="/profil" element={<MyProfilePage />} />
             <Route path="/parametres" element={<SettingsPage />} />
             <Route path="/livres/:bookId/reglages" element={<BookSettingsPage />} />

@@ -5,16 +5,50 @@ import { Logo } from './Logo';
 import { useOnline } from '@/hooks/useOnline';
 import { InstallPrompt } from './InstallPrompt';
 import { AccountMenu } from './AccountMenu';
+import { useQuery } from '@tanstack/react-query';
+import { messagingApi, qk } from '@/api/endpoints';
+import { useAuth } from '@/auth/AuthProvider';
 
 const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: '/', label: 'Accueil', icon: 'home' },
   { to: '/bibliotheque', label: 'Bibliothèque', icon: 'library' },
   { to: '/ecrire', label: 'Écrire', icon: 'pen' },
   { to: '/decouvrir', label: 'Découvrir', icon: 'compass' },
+  { to: '/messages', label: 'Messages', icon: 'message' },
 ];
+
+/** Pastille des messages non lus (mise à jour en temps réel par MessagingSync). */
+function useUnreadCount(enabled: boolean) {
+  const q = useQuery({
+    queryKey: qk.unread,
+    queryFn: messagingApi.unread,
+    enabled,
+    staleTime: 60_000,
+  });
+  return enabled ? (q.data?.count ?? 0) : 0;
+}
+
+function UnreadBadge({ count, className }: { count: number; className?: string }) {
+  if (!count) return null;
+  return (
+    <span
+      className={cx(
+        'flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[0.68rem] font-semibold leading-none text-accent-fg',
+        className,
+      )}
+    >
+      <span className="sr-only">, </span>
+      {count > 99 ? '99+' : count}
+      <span className="sr-only"> non lu{count > 1 ? 's' : ''}</span>
+    </span>
+  );
+}
 
 export function AppShell() {
   const online = useOnline();
+  const { user } = useAuth();
+  const unread = useUnreadCount(!!user);
+  const badge = (to: string) => (to === '/messages' ? unread : 0);
   const location = useLocation();
 
   return (
@@ -47,7 +81,8 @@ export function AppShell() {
               }
             >
               <Icon name={n.icon} />
-              {n.label}
+              <span className="flex-1">{n.label}</span>
+              <UnreadBadge count={badge(n.to)} />
             </NavLink>
           ))}
         </nav>
@@ -107,7 +142,10 @@ export function AppShell() {
                     isActive && 'bg-accent/25',
                   )}
                 >
-                  <Icon name={n.icon} size={22} />
+                  <span className="relative block">
+                    <Icon name={n.icon} size={22} />
+                    <UnreadBadge count={badge(n.to)} className="absolute -right-3 -top-2" />
+                  </span>
                 </span>
                 {n.label}
               </>

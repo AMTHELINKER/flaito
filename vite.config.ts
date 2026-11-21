@@ -45,7 +45,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//, /^\/socket\.io\//],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith('/uploads/'),
@@ -82,12 +82,16 @@ export default defineConfig({
     proxy: {
       '/api': apiTarget,
       '/uploads': apiTarget,
+      // Messagerie temps réel (WebSocket).
+      '/socket.io': { target: apiTarget, ws: true },
     },
   },
   preview: {
     proxy: {
       '/api': apiTarget,
       '/uploads': apiTarget,
+      // Messagerie temps réel (WebSocket).
+      '/socket.io': { target: apiTarget, ws: true },
     },
   },
 });

@@ -2,7 +2,7 @@
 
 Front de **Laito**, PWA d'écriture et de partage de livres : écrire en chapitres, choisir qui peut lire (privé, amis, lien privé, public), partager et lire confortablement, en ligne ou hors ligne. L'API est dans le dépôt [blaito](https://github.com/AMTHELINKER/blaito).
 
-React 18 · TypeScript · Vite · React Router · TanStack Query · Tailwind CSS v4 · vite-plugin-pwa (Workbox) · IndexedDB.
+React 18 · TypeScript · Vite · React Router · TanStack Query · Tailwind CSS v4 · vite-plugin-pwa (Workbox) · IndexedDB · Socket.IO (messagerie).
 
 ## Démarrer
 
@@ -49,7 +49,7 @@ docker run -p 8080:80 -e API_UPSTREAM=http://adresse-de-l-api:3000 laito-web
 src/api         client HTTP (jeton en mémoire, refresh automatique) et requêtes
 src/auth        session, gardes de routes
 src/components  primitives « verre », badges de visibilité, navigation
-src/features    écrans : onboarding, auth, bibliothèque, éditeur, lecteur, partage, découverte, profil, paramètres
+src/features    écrans : onboarding, auth, bibliothèque, éditeur, lecteur, partage, découverte, messagerie, profil, paramètres
 src/shared      types et règles du texte, partagés avec l'API
 src/styles      jetons de design (palette parchemin, mode nuit chaud), effet verre
 ```
@@ -64,6 +64,14 @@ src/styles      jetons de design (palette parchemin, mode nuit chaud), effet ver
 `pnpm shared:sync` lit le dossier voisin `../api` (ou `../blaito`) s'il existe (pratique pour tester avant de pousser), sinon la branche `main` de blaito sur GitHub. `SHARED_SOURCE=/chemin/vers/blaito` force un autre clone local.
 
 La CI échoue si la copie diffère de blaito : à chaque push, et chaque jour pour repérer un changement poussé côté API. Seul `src/shared/text.test.ts` est propre à ce dépôt.
+
+## Messagerie
+
+Écran **Messages** (`/messages`) : conversations privées entre amis et groupes, et onglet **Amis**, seul endroit où l'on ajoute des amis (recherche par pseudo, demandes reçues et envoyées).
+
+- Temps réel : une connexion Socket.IO unique (`src/features/messaging/realtime.ts`), authentifiée par le jeton d'accès. `MessagingSync` traduit les événements en mises à jour du cache TanStack Query : les écrans lisent leurs requêtes sans gérer le socket.
+- Envoi optimiste : le message s'affiche aussitôt (identifiant client), puis il est remplacé par la réponse du serveur ou marqué en échec.
+- En développement, Vite relaie `/socket.io` vers l'API ; en production, nginx fait de même (WebSocket).
 
 ## Format du texte
 

@@ -3,6 +3,8 @@ import {
   DEFAULT_READING_PREFERENCES,
   type AuthResponse,
   type BookDto,
+  type ConversationDto,
+  type FriendDto,
   type MeDto,
   type Paginated,
 } from '../src/shared';
@@ -46,6 +48,46 @@ export const book: BookDto = {
   chapterCount: 1,
   wordCount: 120,
   author: { userId: me.id, username: 'camille', displayName: 'Camille', avatarUrl: null },
+};
+
+export const lea: FriendDto = {
+  userId: '01900000-0000-7000-8000-000000000002',
+  username: 'lea',
+  displayName: 'Léa Martin',
+  avatarUrl: null,
+  status: 'accepted',
+  direction: 'mutual',
+};
+
+export const conversation: ConversationDto = {
+  id: '01900000-0000-7000-8000-0000000000c1',
+  type: 'direct',
+  title: null,
+  members: [
+    { ...me.profile, role: 'member', joinedAt: '2026-01-01T00:00:00.000Z' },
+    {
+      userId: lea.userId,
+      username: lea.username,
+      displayName: lea.displayName,
+      avatarUrl: null,
+      role: 'member',
+      joinedAt: '2026-01-01T00:00:00.000Z',
+    },
+  ],
+  lastMessage: {
+    id: '01900000-0000-7000-8000-0000000000a1',
+    conversationId: '01900000-0000-7000-8000-0000000000c1',
+    senderId: lea.userId,
+    body: 'Tu me fais lire le brouillon ?',
+    createdAt: '2026-01-02T10:00:00.000Z',
+    deletedAt: null,
+    clientId: null,
+  },
+  lastMessageAt: '2026-01-02T10:00:00.000Z',
+  unreadCount: 1,
+  myRole: 'member',
+  canSend: true,
+  createdAt: '2026-01-01T00:00:00.000Z',
 };
 
 interface MockOptions {
@@ -97,8 +139,53 @@ export async function mockApi(page: Page, { loggedIn = false, overrides = {} }: 
       case 'GET /share/with-me':
       case 'GET /share/links':
       case 'GET /share/grants':
-      case 'GET /friends':
         return json(route, []);
+      case 'GET /friends':
+        return json(route, [lea]);
+      case 'GET /users/search':
+        return json(route, [
+          {
+            userId: '01900000-0000-7000-8000-000000000003',
+            username: 'hugo',
+            displayName: 'Hugo',
+            avatarUrl: null,
+          },
+        ]);
+      case 'POST /friends/hugo':
+        return json(route, {
+          userId: '01900000-0000-7000-8000-000000000003',
+          username: 'hugo',
+          displayName: 'Hugo',
+          avatarUrl: null,
+          status: 'pending',
+          direction: 'outgoing',
+        });
+      case 'GET /conversations':
+        return json(route, { items: [conversation], nextCursor: null });
+      case 'GET /conversations/unread-count':
+        return json(route, { count: 1 });
+      case `GET /conversations/${conversation.id}`:
+        return json(route, conversation);
+      case `GET /conversations/${conversation.id}/messages`:
+        return json(route, { items: [conversation.lastMessage], nextCursor: null });
+      case `POST /conversations/${conversation.id}/read`:
+        return route.fulfill({ status: 204 });
+      case `POST /conversations/${conversation.id}/messages`: {
+        const { body, clientId } = route.request().postDataJSON();
+        return json(
+          route,
+          {
+            id: '01900000-0000-7000-8000-0000000000a2',
+            conversationId: conversation.id,
+            senderId: me.id,
+            body,
+            clientId,
+            createdAt: new Date().toISOString(),
+            deletedAt: null,
+          },
+          201,
+        );
+      }
       case 'GET /catalog':
         return json(route, catalog);
       case 'GET /catalog/genres':

@@ -19,7 +19,6 @@ import {
 } from '@/components/ui/primitives';
 import { Avatar } from '@/components/Avatar';
 import { useToast } from '@/components/ui/Toast';
-import { FriendsSection } from '../social/FriendsSection';
 
 function ProfileHeader({
   profile,
@@ -180,10 +179,6 @@ export function MyProfilePage() {
           }
         />
       )}
-      <div className="mt-10">
-        <FriendsSection />
-      </div>
-
       <p className="mt-10 text-center text-sm">
         <a
           href="mailto:avis@laito.app?subject=Mon%20avis%20sur%20Laito"
