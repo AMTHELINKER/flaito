@@ -45,3 +45,42 @@ test("l'ajout d'amis se fait depuis l'onglet Amis de la messagerie", async ({ pa
   await page.getByRole('button', { name: 'Ajouter' }).click();
   await expect(page.getByText('Demande envoyée.')).toBeVisible();
 });
+
+test('mobile : une discussion ouverte prend tout l’écran, comme Instagram', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'comportement propre au mobile');
+  await page.goto('/messages');
+  const nav = page.getByRole('navigation', { name: 'Navigation principale' });
+  await expect(nav).toBeVisible();
+  await page.getByRole('link', { name: /Léa Martin/ }).click();
+
+  // Ni barre du haut ni navigation du bas : seul le fil occupe l'écran.
+  await expect(nav).toBeHidden();
+  await expect(page.getByRole('button', { name: /compte de/i })).toBeHidden();
+  const viewport = page.viewportSize()!;
+  const composer = await page.getByLabel('Votre message').boundingBox();
+  expect(composer!.y + composer!.height).toBeGreaterThan(viewport.height - 70);
+
+  // Le bouton d'envoi n'apparaît qu'avec du texte.
+  await expect(page.getByRole('button', { name: 'Envoyer' })).toBeDisabled();
+  await page.getByLabel('Votre message').fill('Coucou');
+  await expect(page.getByRole('button', { name: 'Envoyer' })).toBeEnabled();
+
+  await page.getByRole('link', { name: 'Retour aux conversations' }).click();
+  await expect(nav).toBeVisible();
+});
+
+test('bureau : la discussion reste à côté de la liste', async ({ page }, info) => {
+  test.skip(info.project.name !== 'bureau', 'comportement propre au bureau');
+  await page.goto('/messages');
+  await page.getByRole('link', { name: /Léa Martin/ }).click();
+  await expect(
+    page.getByRole('navigation', { name: 'Navigation principale' }).first(),
+  ).toBeVisible();
+  // La liste reste visible à côté du fil.
+  await expect(
+    page.getByRole('list', { name: 'Conversations' }).getByRole('link', { name: /Léa Martin/ }),
+  ).toBeVisible();
+  await expect(page.getByRole('log')).toBeVisible();
+});

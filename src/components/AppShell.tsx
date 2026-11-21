@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useMatch } from 'react-router-dom';
 import { Icon, type IconName } from './ui/Icon';
 import { cx } from './ui/primitives';
 import { Logo } from './Logo';
@@ -49,6 +49,8 @@ export function AppShell() {
   const { user } = useAuth();
   const unread = useUnreadCount(!!user);
   const badge = (to: string) => (to === '/messages' ? unread : 0);
+  // Mobile : une discussion ouverte prend tout l'écran (sans barre du haut ni navigation).
+  const immersive = !!useMatch('/messages/:conversationId');
   const location = useLocation();
 
   return (
@@ -95,14 +97,19 @@ export function AppShell() {
         </div>
       </aside>
 
-      {!online && (
+      {!online && !immersive && (
         <div className="glass fixed inset-x-3 top-16 z-40 flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-xs md:hidden">
           <Icon name="cloudOff" size={14} /> Hors ligne – vos écrits sont gardés sur l’appareil
         </div>
       )}
 
       {/* Barre du haut : logo sur mobile, compte toujours en haut à droite. */}
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 pt-3 sm:px-6 md:justify-end md:pt-4">
+      <header
+        className={cx(
+          'mx-auto max-w-6xl items-center justify-between px-4 pt-3 sm:px-6 md:flex md:justify-end md:pt-4',
+          immersive ? 'hidden' : 'flex',
+        )}
+      >
         <NavLink to="/" className="md:hidden" aria-label="Laito, accueil">
           <Logo />
         </NavLink>
@@ -120,7 +127,10 @@ export function AppShell() {
       {/* Mobile : barre de navigation en bas */}
       <nav
         aria-label="Navigation principale"
-        className="glass safe-bottom fixed inset-x-2 bottom-2 z-40 flex justify-around rounded-xl md:hidden"
+        className={cx(
+          'glass safe-bottom fixed inset-x-2 bottom-2 z-40 justify-around rounded-xl md:hidden',
+          immersive ? 'hidden' : 'flex',
+        )}
       >
         {NAV.map((n) => (
           <NavLink
@@ -153,7 +163,7 @@ export function AppShell() {
           </NavLink>
         ))}
       </nav>
-      <InstallPrompt />
+      {!immersive && <InstallPrompt />}
     </div>
   );
 }

@@ -58,21 +58,16 @@ export function ConversationView({ conversationId }: { conversationId: string })
   const c = conv.data;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex items-center gap-2 border-b border-line px-2 py-2 sm:px-3">
+      {/* En-tête façon messagerie mobile : retour, avatar et nom (touchez pour le profil ou les infos du groupe). */}
+      <header className="flex items-center gap-1 border-b border-line bg-page/95 px-1 pb-1.5 pt-[max(0.375rem,env(safe-area-inset-top))] backdrop-blur md:bg-transparent md:px-3 md:py-2">
         <Link
           to="/messages"
           aria-label="Retour aux conversations"
-          className="pressable inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-fg/[0.06] md:hidden"
+          className="pressable inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full hover:bg-fg/[0.06] md:hidden"
         >
-          <Icon name="chevronLeft" />
+          <Icon name="chevronLeft" size={24} />
         </Link>
-        <ConversationAvatar conversation={c} meId={meId} size={40} />
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate font-sans text-base font-semibold">
-            {conversationTitle(c, meId)}
-          </h2>
-          <TypingOrSubtitle conversation={c} meId={meId} />
-        </div>
+        <HeaderIdentity conversation={c} meId={meId} onGroupInfo={() => setInfoOpen(true)} />
         {c.type === 'group' && (
           <IconButton icon="info" label="Infos du groupe" onClick={() => setInfoOpen(true)} />
         )}
@@ -87,6 +82,49 @@ export function ConversationView({ conversationId }: { conversationId: string })
   );
 }
 
+function HeaderIdentity({
+  conversation,
+  meId,
+  onGroupInfo,
+}: {
+  conversation: ConversationDto;
+  meId: string;
+  onGroupInfo: () => void;
+}) {
+  const body = (
+    <>
+      <ConversationAvatar conversation={conversation} meId={meId} size={38} />
+      <span className="min-w-0 flex-1 text-left">
+        <span className="block truncate font-sans text-base font-semibold">
+          {conversationTitle(conversation, meId)}
+        </span>
+        <TypingOrSubtitle conversation={conversation} meId={meId} />
+      </span>
+    </>
+  );
+  const cls =
+    'pressable flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-lg px-1.5 hover:bg-fg/[0.04]';
+  if (conversation.type === 'group')
+    return (
+      <button
+        type="button"
+        className={cls}
+        onClick={onGroupInfo}
+        aria-label={`Infos du groupe ${conversation.title ?? ''}`}
+      >
+        {body}
+      </button>
+    );
+  const other = conversation.members.find((m) => m.userId !== meId);
+  return other ? (
+    <Link to={`/u/${other.username}`} className={cls} aria-label={`Profil de ${other.displayName}`}>
+      {body}
+    </Link>
+  ) : (
+    <div className={cls}>{body}</div>
+  );
+}
+
 function TypingOrSubtitle({ conversation, meId }: { conversation: ConversationDto; meId: string }) {
   const ids = useSyncExternalStore(typingStore.subscribe, () => typingStore.get(conversation.id));
   const names = ids
@@ -95,11 +133,15 @@ function TypingOrSubtitle({ conversation, meId }: { conversation: ConversationDt
     .filter(Boolean);
   if (names.length)
     return (
-      <p className="truncate text-xs text-accent-text" aria-live="polite">
+      <span className="block truncate text-xs text-accent-text" aria-live="polite">
         {names.length === 1 ? `${names[0]} écrit…` : 'Plusieurs personnes écrivent…'}
-      </p>
+      </span>
     );
-  return <p className="truncate text-xs text-muted">{conversationSubtitle(conversation, meId)}</p>;
+  return (
+    <span className="block truncate text-xs text-muted">
+      {conversationSubtitle(conversation, meId)}
+    </span>
+  );
 }
 
 // ───────────────────────── Fil des messages ─────────────────────────
@@ -367,14 +409,14 @@ function Composer({ conversation, meId }: { conversation: ConversationDto; meId:
 
   if (!conversation.canSend)
     return (
-      <p className="border-t border-line px-4 py-3 text-center text-sm text-muted">
+      <p className="border-t border-line px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 text-center text-sm text-muted">
         Vous n’êtes plus amis : cette conversation est en lecture seule.
       </p>
     );
 
   return (
     <form
-      className="flex items-end gap-2 border-t border-line p-2 sm:p-3"
+      className="px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 sm:px-3 sm:pb-3"
       onSubmit={(e) => {
         e.preventDefault();
         submit();
@@ -383,36 +425,43 @@ function Composer({ conversation, meId }: { conversation: ConversationDto; meId:
       <label htmlFor="composer" className="sr-only">
         Votre message
       </label>
-      <textarea
-        id="composer"
-        ref={ta}
-        rows={1}
-        value={text}
-        maxLength={MESSAGE_MAX_LENGTH}
-        placeholder={online ? 'Votre message' : 'Hors ligne – reconnectez-vous pour écrire'}
-        disabled={!online}
-        onChange={(e) => {
-          setText(e.target.value);
-          autoGrow();
-          if (e.target.value) emitTyping(conversation.id);
-        }}
-        onKeyDown={(e) => {
-          // Entrée envoie, Maj+Entrée passe à la ligne.
-          if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-            e.preventDefault();
-            submit();
-          }
-        }}
-        className="max-h-40 min-h-11 flex-1 resize-none rounded-lg border border-line bg-page/80 px-3 py-2.5 leading-snug text-fg placeholder:text-muted/80 focus:border-accent-text focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-60"
-      />
-      <button
-        type="submit"
-        aria-label="Envoyer"
-        disabled={!text.trim() || !online}
-        className="pressable inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg shadow-soft disabled:opacity-40"
-      >
-        <Icon name="send" size={20} />
-      </button>
+      {/* Champ en pilule, bouton d'envoi intégré. */}
+      <div className="flex items-end rounded-3xl border border-line bg-surface focus-within:border-accent-text focus-within:ring-2 focus-within:ring-accent/30">
+        <textarea
+          id="composer"
+          ref={ta}
+          rows={1}
+          value={text}
+          maxLength={MESSAGE_MAX_LENGTH}
+          placeholder={online ? 'Votre message' : 'Hors ligne – reconnectez-vous pour écrire'}
+          disabled={!online}
+          onChange={(e) => {
+            setText(e.target.value);
+            autoGrow();
+            if (e.target.value) emitTyping(conversation.id);
+          }}
+          onKeyDown={(e) => {
+            // Entrée envoie, Maj+Entrée passe à la ligne.
+            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+          className="max-h-40 min-h-11 flex-1 resize-none bg-transparent py-2.5 pl-4 leading-snug text-fg placeholder:text-muted/80 focus:outline-none disabled:opacity-60"
+        />
+        <button
+          type="submit"
+          aria-label="Envoyer"
+          disabled={!text.trim() || !online}
+          className={cx(
+            'pressable m-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent text-accent-fg transition-opacity duration-150',
+            // Le bouton n'apparaît que lorsqu'il y a quelque chose à envoyer.
+            text.trim() ? 'opacity-100' : 'pointer-events-none opacity-0',
+          )}
+        >
+          <Icon name="send" size={18} />
+        </button>
+      </div>
     </form>
   );
 }

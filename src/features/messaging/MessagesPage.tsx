@@ -39,7 +39,16 @@ export function MessagesPage() {
   const items = conversations.data?.pages.flatMap((p) => p.items) ?? [];
 
   return (
-    <div className="glass grid h-[calc(100dvh-10.5rem)] min-h-[26rem] overflow-hidden rounded-xl md:h-[calc(100dvh-7rem)] md:grid-cols-[22rem_1fr]">
+    <div
+      className={cx(
+        'grid overflow-hidden md:glass md:h-[calc(100dvh-7rem)] md:min-h-[26rem] md:grid-cols-[22rem_1fr] md:rounded-xl',
+        // Mobile d'abord : la liste remplit l'écran entre les barres ; une discussion
+        // ouverte devient une couche plein écran opaque, à la manière d'Instagram.
+        conversationId
+          ? 'max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-dvh max-md:bg-page'
+          : 'max-md:h-[calc(100dvh-9.5rem)]',
+      )}
+    >
       <aside
         className={cx(
           'flex min-h-0 flex-col border-line md:border-r',
@@ -101,7 +110,7 @@ export function MessagesPage() {
 
       <section
         className={cx(
-          'min-h-0 bg-page/40',
+          'min-h-0 md:bg-page/40',
           conversationId ? 'flex flex-col' : 'hidden md:flex md:flex-col',
         )}
       >
