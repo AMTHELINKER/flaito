@@ -160,6 +160,19 @@ function BookSettingsForm({ book }: { book: BookDto }) {
   return (
     <div className="mx-auto max-w-3xl">
       <Celebration trigger={celebrate} />
+      {book.hiddenAt && (
+        <div
+          role="status"
+          className="mb-5 flex items-start gap-3 rounded-lg border border-danger/40 bg-page p-4"
+        >
+          <Icon name="eyeOff" size={20} className="mt-0.5 shrink-0 text-danger" />
+          <p className="text-sm">
+            <strong>Ce livre a été masqué par l’équipe de modération</strong> à la suite d’un
+            signalement. Vous seul pouvez encore le voir ; il n’apparaît plus aux lecteurs ni dans
+            le catalogue.
+          </p>
+        </div>
+      )}
       <PageHeader
         title={book.title}
         subtitle="Réglages du livre"

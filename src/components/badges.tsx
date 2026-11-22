@@ -99,3 +99,15 @@ export function VisibilityPicker({
     </fieldset>
   );
 }
+
+/** Contenu masqué par la modération (vu seulement par son auteur). */
+export function HiddenBadge() {
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full border border-danger/40 px-2 py-0.5 text-xs font-medium text-danger"
+      title="Masqué par la modération : visible de vous seul"
+    >
+      <Icon name="eyeOff" size={12} /> Masqué
+    </span>
+  );
+}

@@ -10,6 +10,7 @@ import {
 import { ApiRequestError, sendKeepalive } from '@/api/client';
 import { qk, readApi } from '@/api/endpoints';
 import { useAuth } from '@/auth/AuthProvider';
+import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { ChapterText } from '@/components/ChapterText';
 import { Icon } from '@/components/ui/Icon';
 import { Button, ErrorNotice, IconButton, Skeleton, cx } from '@/components/ui/primitives';
@@ -93,6 +94,7 @@ function ChapterReader({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { user } = useAuth();
+  const [reporting, setReporting] = useState(false);
   const [prefs, setPrefs] = useReadingPrefs();
   const chapter = useQuery({
     queryKey: qk.readChapter(chapterId, share),
@@ -402,7 +404,29 @@ function ChapterReader({
               </li>
             ))}
           </ol>
+          {/* Signalement : discret, dans le menu du livre (accessible en défilement comme en pages). */}
+          {user && !isOwner && (
+            <button
+              type="button"
+              onClick={() => {
+                setPanel(null);
+                setReporting(true);
+              }}
+              className="mt-1 flex min-h-11 w-full items-center gap-3 rounded-md border-t border-black/10 px-3 text-sm hover:bg-black/5"
+              style={{ color: 'var(--r-muted)' }}
+            >
+              <Icon name="flag" size={16} /> Signaler ce livre
+            </button>
+          )}
         </nav>
+      )}
+      {reporting && (
+        <ReportDialog
+          open
+          onClose={() => setReporting(false)}
+          targetType="book"
+          targetId={bookId}
+        />
       )}
 
       <main

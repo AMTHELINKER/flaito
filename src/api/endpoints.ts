@@ -1,5 +1,7 @@
 import type {
   AccessGrantDto,
+  AdminStatsDto,
+  AdminUserDto,
   AuthResponse,
   BookDto,
   ChapterContentDto,
@@ -8,10 +10,12 @@ import type {
   CreateAccessGrantRequest,
   CreateBookRequest,
   CreateChapterRequest,
+  CreateReportRequest,
   CreateShareLinkRequest,
   FriendDto,
   LoginRequest,
   MeDto,
+  ModerationActionDto,
   MessageDto,
   Paginated,
   ProfileDto,
@@ -19,12 +23,16 @@ import type {
   ReadableBookDto,
   ReadableChapterDto,
   ReadingProgressDto,
+  ReportDecision,
+  ReportDto,
+  ReportStatus,
   RegisterRequest,
   ResourceType,
   SaveContentRequest,
   ShareLinkDto,
   UpdateBookRequest,
   UpdateChapterRequest,
+  UserRole,
   UserSettingsDto,
 } from '@laito/shared';
 import { api } from './client';
@@ -60,6 +68,10 @@ export const qk = {
   conversation: (id: string) => ['conversations', id] as const,
   messages: (id: string) => ['conversations', id, 'messages'] as const,
   unread: ['conversations', 'unread-count'] as const,
+  adminStats: ['admin', 'stats'] as const,
+  adminReports: (status: ReportStatus) => ['admin', 'reports', status] as const,
+  adminUsers: (q: string) => ['admin', 'users', q] as const,
+  adminActions: ['admin', 'actions'] as const,
 };
 
 export const authApi = {
@@ -195,4 +207,31 @@ export const messagingApi = {
   deleteMessage: (id: string, messageId: string) =>
     api<void>(`/conversations/${id}/messages/${messageId}`, { method: 'DELETE' }),
   markRead: (id: string) => api<void>(`/conversations/${id}/read`, { method: 'POST' }),
+};
+
+export const reportsApi = {
+  create: (b: CreateReportRequest) => api<Msg>('/reports', { method: 'POST', body: b }),
+};
+
+type ContentType = 'book' | 'chapter' | 'message';
+export const adminApi = {
+  stats: () => api<AdminStatsDto>('/admin/stats'),
+  reports: (status: ReportStatus, cursor?: string | null) =>
+    api<Paginated<ReportDto>>(`/admin/reports${q({ status, cursor })}`),
+  resolve: (id: string, decision: ReportDecision, note?: string) =>
+    api<void>(`/admin/reports/${id}/resolve`, { method: 'POST', body: { decision, note } }),
+  hide: (type: ContentType, id: string, reason?: string) =>
+    api<void>(`/admin/content/${type}/${id}/hide`, { method: 'POST', body: { reason } }),
+  unhide: (type: ContentType, id: string, reason?: string) =>
+    api<void>(`/admin/content/${type}/${id}/unhide`, { method: 'POST', body: { reason } }),
+  users: (term: string, cursor?: string | null) =>
+    api<Paginated<AdminUserDto>>(`/admin/users${q({ q: term, cursor })}`),
+  suspend: (id: string, reason?: string) =>
+    api<void>(`/admin/users/${id}/suspend`, { method: 'POST', body: { reason } }),
+  reinstate: (id: string, reason?: string) =>
+    api<void>(`/admin/users/${id}/reinstate`, { method: 'POST', body: { reason } }),
+  setRole: (id: string, role: UserRole) =>
+    api<void>(`/admin/users/${id}/role`, { method: 'PATCH', body: { role } }),
+  actions: (cursor?: string | null) =>
+    api<Paginated<ModerationActionDto>>(`/admin/actions${q({ cursor })}`),
 };

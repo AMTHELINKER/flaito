@@ -18,6 +18,7 @@ import {
   cx,
 } from '@/components/ui/primitives';
 import { Avatar } from '@/components/Avatar';
+import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { useToast } from '@/components/ui/Toast';
 
 function ProfileHeader({
@@ -64,6 +65,8 @@ function ProfileHeader({
 // Profil public d'un auteur
 export function PublicProfilePage() {
   const { username = '' } = useParams();
+  const { user } = useAuth();
+  const [reporting, setReporting] = useState(false);
   const q = useQuery({
     queryKey: qk.profile(username),
     queryFn: () => meApi.publicProfile(username),
@@ -89,6 +92,25 @@ export function PublicProfilePage() {
         </BookGrid>
       ) : (
         <EmptyState icon="bookOpen" title="Pas encore de livre public" />
+      )}
+      {user && user.id !== profile.userId && (
+        <p className="mt-10 text-center">
+          <button
+            type="button"
+            onClick={() => setReporting(true)}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-md px-3 text-sm text-muted hover:text-fg"
+          >
+            <Icon name="flag" size={16} /> Signaler ce profil
+          </button>
+        </p>
+      )}
+      {reporting && (
+        <ReportDialog
+          open
+          onClose={() => setReporting(false)}
+          targetType="user"
+          targetId={profile.userId}
+        />
       )}
     </>
   );

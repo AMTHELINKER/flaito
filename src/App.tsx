@@ -40,6 +40,9 @@ const PublicProfilePage = lazy(() =>
 const MessagesPage = lazy(() =>
   import('@/features/messaging/MessagesPage').then((m) => ({ default: m.MessagesPage })),
 );
+const AdminPage = lazy(() =>
+  import('@/features/admin/AdminPage').then((m) => ({ default: m.AdminPage })),
+);
 const ShareLandingPage = lazy(() =>
   import('@/features/share/ShareLandingPage').then((m) => ({ default: m.ShareLandingPage })),
 );
@@ -97,6 +100,7 @@ export function App() {
             <Route path="/ecrire" element={<NewBookPage />} />
             <Route path="/messages/:conversationId?" element={<MessagesPage />} />
             <Route path="/profil" element={<MyProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="/parametres" element={<SettingsPage />} />
             <Route path="/livres/:bookId/reglages" element={<BookSettingsPage />} />
           </Route>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { BookDto } from '@laito/shared';
 import { BookCover } from './BookCover';
-import { StatusBadge, VisibilityBadge } from './badges';
+import { HiddenBadge, StatusBadge, VisibilityBadge } from './badges';
 import { formatWords } from '@/lib/format';
 import { Skeleton } from './ui/primitives';
 
@@ -27,6 +27,7 @@ export function BookCard({
           <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge value={book.status} />
             <VisibilityBadge value={book.visibility} />
+            {book.hiddenAt && <HiddenBadge />}
           </div>
         )}
         <p className="text-xs text-muted">

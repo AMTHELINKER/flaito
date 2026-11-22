@@ -150,6 +150,8 @@ export interface BookDto {
   chapterCount: number;
   wordCount: number;
   author?: Pick<ProfileDto, 'userId' | 'username' | 'displayName' | 'avatarUrl'>;
+  /** Masqué par la modération (visible seulement de l'auteur). */
+  hiddenAt?: string | null;
 }
 
 export interface ChapterDto {
@@ -162,6 +164,8 @@ export interface ChapterDto {
   wordCount: number;
   publishedAt: string | null;
   updatedAt: string;
+  /** Masqué par la modération (visible seulement de l'auteur). */
+  hiddenAt?: string | null;
 }
 
 export interface ChapterContentDto {
@@ -372,6 +376,102 @@ export interface ConversationReadEvent {
 export interface TypingEvent {
   conversationId: string;
   userId: string;
+}
+
+// ───────────────────────── Modération ─────────────────────────
+
+export type ReportTargetType = 'book' | 'chapter' | 'user' | 'message';
+export type ReportReason = 'spam' | 'harassment' | 'inappropriate' | 'copyright' | 'other';
+export type ReportStatus = 'open' | 'resolved' | 'dismissed';
+export type ModerationActionType =
+  | 'hide_content'
+  | 'unhide_content'
+  | 'suspend_user'
+  | 'reinstate_user'
+  | 'dismiss_report'
+  | 'change_role';
+
+export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
+  spam: 'Spam ou publicité',
+  harassment: 'Harcèlement ou propos haineux',
+  inappropriate: 'Contenu inapproprié',
+  copyright: 'Plagiat ou droits d’auteur',
+  other: 'Autre',
+};
+
+export const REPORT_REASONS = Object.keys(REPORT_REASON_LABELS) as ReportReason[];
+export const REPORT_DETAILS_MAX_LENGTH = 1000;
+
+export interface CreateReportRequest {
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  details?: string;
+}
+
+/** Résumé lisible de ce qui est signalé (pour l'écran de modération). */
+export interface ReportTargetSummary {
+  label: string;
+  excerpt: string | null;
+  /** Lien vers le contenu dans l'application, si consultable. */
+  href: string | null;
+  /** Auteur du contenu signalé (ou la personne signalée). */
+  ownerId: string | null;
+  ownerName: string | null;
+  hidden: boolean;
+  /** Le contenu n'existe plus. */
+  missing: boolean;
+}
+
+export interface ReportDto {
+  id: string;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  details: string | null;
+  status: ReportStatus;
+  reporter: PublicProfileDto | null;
+  target: ReportTargetSummary;
+  /** Nombre de signalements ouverts sur la même cible. */
+  similarOpen: number;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export type ReportDecision = 'dismiss' | 'hide' | 'suspend';
+
+export interface ResolveReportRequest {
+  decision: ReportDecision;
+  note?: string;
+}
+
+export interface AdminStatsDto {
+  users: { total: number; new7d: number; suspended: number; verified: number };
+  books: { total: number; public: number; new7d: number; hidden: number };
+  chapters: { total: number; published: number };
+  words: number;
+  messages: { total: number; last7d: number };
+  reports: { open: number; resolved7d: number };
+}
+
+export interface AdminUserDto extends PublicProfileDto {
+  email: string;
+  role: UserRole;
+  status: UserStatus;
+  emailVerified: boolean;
+  createdAt: string;
+  bookCount: number;
+}
+
+export interface ModerationActionDto {
+  id: string;
+  moderator: PublicProfileDto | null;
+  action: ModerationActionType;
+  targetType: ReportTargetType;
+  targetId: string;
+  targetLabel: string | null;
+  reason: string | null;
+  createdAt: string;
 }
 
 // ───────────────────────── Divers ─────────────────────────

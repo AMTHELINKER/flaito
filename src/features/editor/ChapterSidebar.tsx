@@ -144,6 +144,14 @@ export function ChapterSidebar({
                   <span className="flex items-center gap-1.5 text-xs text-muted">
                     <Icon name={VISIBILITY_ICONS[c.visibility]} size={12} />
                     {VISIBILITY_LABELS[c.visibility]} · {STATUS_LABELS[c.status]}
+                    {c.hiddenAt && (
+                      <span
+                        className="ml-1 inline-flex items-center gap-0.5 text-danger"
+                        title="Masqué par la modération"
+                      >
+                        · <Icon name="eyeOff" size={12} /> Masqué
+                      </span>
+                    )}
                   </span>
                 </span>
               </button>

@@ -14,6 +14,7 @@ import { errorMessage } from '@/api/client';
 import { messagingApi, qk } from '@/api/endpoints';
 import { useAuth } from '@/auth/AuthProvider';
 import { Avatar } from '@/components/Avatar';
+import { ReportDialog } from '@/features/moderation/ReportDialog';
 import { Icon } from '@/components/ui/Icon';
 import { ConfirmDialog } from '@/components/ui/Modal';
 import { cx, ErrorNotice, IconButton, Skeleton } from '@/components/ui/primitives';
@@ -154,6 +155,7 @@ function MessageList({ conversation, meId }: { conversation: ConversationDto; me
   const atBottom = useRef(true);
   const prevHeight = useRef(0);
   const [toDelete, setToDelete] = useState<LocalMessage | null>(null);
+  const [toReport, setToReport] = useState<string | null>(null);
 
   const messages = useInfiniteQuery({
     queryKey: qk.messages(conversation.id),
@@ -299,12 +301,29 @@ function MessageList({ conversation, meId }: { conversation: ConversationDto; me
                     className="h-9 w-9 text-muted opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
                   />
                 )}
+                {!mine && !m.deletedAt && (
+                  <IconButton
+                    icon="flag"
+                    size={16}
+                    label="Signaler ce message"
+                    onClick={() => setToReport(m.id)}
+                    className="h-9 w-9 text-muted opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
+                  />
+                )}
               </div>
             </li>
           );
         })}
       </ol>
 
+      {toReport && (
+        <ReportDialog
+          open
+          onClose={() => setToReport(null)}
+          targetType="message"
+          targetId={toReport}
+        />
+      )}
       <ConfirmDialog
         open={!!toDelete}
         title="Supprimer ce message ?"

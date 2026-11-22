@@ -93,6 +93,8 @@ export const conversation: ConversationDto = {
 interface MockOptions {
   /** Session déjà ouverte (refresh accepté). */
   loggedIn?: boolean;
+  /** Rôle de l'utilisateur connecté. */
+  role?: MeDto['role'];
   /** Réponses spécifiques, clé « MÉTHODE /chemin » sans le préfixe /api/v1. */
   overrides?: Record<string, (route: Route) => unknown>;
 }
@@ -101,8 +103,11 @@ const json = (route: Route, body: unknown, status = 200) =>
   route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
 
 /** Simule l'API v1. Toute route non prévue répond 404, pour repérer un appel inattendu. */
-export async function mockApi(page: Page, { loggedIn = false, overrides = {} }: MockOptions = {}) {
-  const auth: AuthResponse = { accessToken: 'jeton-de-test', user: me };
+export async function mockApi(
+  page: Page,
+  { loggedIn = false, role = 'user', overrides = {} }: MockOptions = {},
+) {
+  const auth: AuthResponse = { accessToken: 'jeton-de-test', user: { ...me, role } };
   let state = { ...book };
   const catalog: Paginated<BookDto> = {
     items: [{ ...book, visibility: 'public' }],
@@ -188,6 +193,53 @@ export async function mockApi(page: Page, { loggedIn = false, overrides = {} }: 
       }
       case 'GET /catalog':
         return json(route, catalog);
+      case 'GET /profiles/lea':
+        return json(route, { profile: { ...lea, bio: null, links: [] }, books: [] });
+      case 'POST /reports':
+        return json(route, { message: 'Merci. Notre équipe va examiner ce signalement.' }, 201);
+      case 'GET /admin/stats':
+        return json(route, {
+          users: { total: 12, new7d: 3, suspended: 1, verified: 11 },
+          books: { total: 8, public: 5, new7d: 2, hidden: 1 },
+          chapters: { total: 30, published: 20 },
+          words: 42000,
+          messages: { total: 120, last7d: 40 },
+          reports: { open: 1, resolved7d: 2 },
+        });
+      case 'GET /admin/reports':
+        return json(route, {
+          items: [
+            {
+              id: '01900000-0000-7000-8000-0000000000r1',
+              targetType: 'book',
+              targetId: book.id,
+              reason: 'spam',
+              details: 'Liens publicitaires partout',
+              status: 'open',
+              reporter: {
+                userId: lea.userId,
+                username: 'lea',
+                displayName: 'Léa Martin',
+                avatarUrl: null,
+              },
+              target: {
+                label: 'Livre « Les Jardins de Sel »',
+                excerpt: 'Une maison oubliée par la mer.',
+                href: `/lire/${book.id}`,
+                ownerId: '01900000-0000-7000-8000-000000000009',
+                ownerName: 'Hugo',
+                hidden: false,
+                missing: false,
+              },
+              similarOpen: 2,
+              createdAt: new Date().toISOString(),
+              resolvedAt: null,
+            },
+          ],
+          nextCursor: null,
+        });
+      case 'POST /admin/reports/01900000-0000-7000-8000-0000000000r1/resolve':
+        return route.fulfill({ status: 204 });
       case 'GET /catalog/genres':
         return json(route, [{ genre: 'roman', count: 1 }]);
       default:

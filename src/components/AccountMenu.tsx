@@ -98,6 +98,8 @@ export function AccountMenu() {
           </div>
           {entry('/profil', 'user', 'Mon profil')}
           {entry('/parametres', 'settings', 'Paramètres')}
+          {(user.role === 'moderator' || user.role === 'admin') &&
+            entry('/admin', 'shield', 'Administration')}
           <button
             role="menuitem"
             type="button"
