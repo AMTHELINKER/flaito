@@ -13,6 +13,7 @@ const ACTION_LABELS: Record<ModerationActionType, string> = {
   reinstate_user: 'a réactivé',
   dismiss_report: 'a classé un signalement sur',
   change_role: 'a changé le rôle de',
+  delete_user: 'a supprimé le compte de',
 };
 
 /** Journal des décisions : qui, quoi, quand, pourquoi. Un masquage peut être annulé d'ici. */
@@ -45,9 +46,14 @@ export function ActionsPanel() {
           <li key={a.id} className="flex flex-wrap items-baseline gap-x-2 gap-y-1 p-3 text-sm">
             <span className="font-medium">{a.moderator?.displayName ?? 'Ancien modérateur'}</span>
             <span className="text-muted">{ACTION_LABELS[a.action]}</span>
-            <span className="min-w-0 flex-1 truncate">{a.targetLabel ?? a.targetType}</span>
+            <span className="min-w-0 flex-1 truncate">
+              {/* Compte supprimé : son nom n'existe plus qu'au journal (dans la note). */}
+              {a.action === 'delete_user' ? a.reason : (a.targetLabel ?? a.targetType)}
+            </span>
             <time className="text-xs text-muted">{timeAgo(a.createdAt)}</time>
-            {a.reason && <p className="w-full text-xs text-muted">« {a.reason} »</p>}
+            {a.reason && a.action !== 'delete_user' && (
+              <p className="w-full text-xs text-muted">« {a.reason} »</p>
+            )}
             {a.action === 'hide_content' && (
               <Button
                 size="sm"

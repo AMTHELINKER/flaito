@@ -38,3 +38,26 @@ test('un modérateur traite un signalement depuis l’administration', async ({ 
   await page.getByRole('dialog').getByRole('button', { name: 'Masquer' }).click();
   await expect(page.getByText('Contenu masqué.')).toBeVisible();
 });
+
+test('un administrateur supprime un compte après avoir retapé son pseudo', async ({ page }) => {
+  await mockApi(page, { loggedIn: true, role: 'admin' });
+  await skipOnboarding(page);
+  await page.goto('/admin?onglet=comptes');
+  await page.getByRole('button', { name: 'Supprimer le compte de Hugo' }).click();
+  const dialog = page.getByRole('dialog');
+  const confirm = dialog.getByRole('button', { name: 'Supprimer définitivement' });
+  await expect(confirm).toBeDisabled();
+  await dialog.getByLabel(/tapez le pseudo/).fill('hug');
+  await expect(confirm).toBeDisabled();
+  await dialog.getByLabel(/tapez le pseudo/).fill('hugo');
+  await confirm.click();
+  await expect(page.getByText('Compte de Hugo supprimé.')).toBeVisible();
+});
+
+test("un modérateur ne voit pas le bouton de suppression d'un compte", async ({ page }) => {
+  await mockApi(page, { loggedIn: true, role: 'moderator' });
+  await skipOnboarding(page);
+  await page.goto('/admin?onglet=comptes');
+  await expect(page.getByText('hugo@exemple.fr')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Supprimer le compte/ })).toHaveCount(0);
+});

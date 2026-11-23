@@ -389,7 +389,8 @@ export type ModerationActionType =
   | 'suspend_user'
   | 'reinstate_user'
   | 'dismiss_report'
-  | 'change_role';
+  | 'change_role'
+  | 'delete_user';
 
 export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
   spam: 'Spam ou publicité',

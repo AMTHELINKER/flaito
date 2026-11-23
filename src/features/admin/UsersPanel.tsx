@@ -7,7 +7,16 @@ import { adminApi, qk } from '@/api/endpoints';
 import { useAuth } from '@/auth/AuthProvider';
 import { Avatar } from '@/components/Avatar';
 import { Icon } from '@/components/ui/Icon';
-import { Button, cx, EmptyState, Skeleton } from '@/components/ui/primitives';
+import {
+  Button,
+  cx,
+  EmptyState,
+  IconButton,
+  Skeleton,
+  TextArea,
+  TextField,
+} from '@/components/ui/primitives';
+import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { formatDate } from '@/lib/format';
 import { DecisionDialog } from './DecisionDialog';
@@ -85,6 +94,7 @@ function UserRow({ account: u }: { account: AdminUserDto }) {
   const qc = useQueryClient();
   const toast = useToast();
   const [confirm, setConfirm] = useState<'suspend' | 'reinstate' | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const refresh = () => void qc.invalidateQueries({ queryKey: ['admin'] });
 
   const status = useMutation({
@@ -177,8 +187,17 @@ function UserRow({ account: u }: { account: AdminUserDto }) {
               Suspendre
             </Button>
           )}
+          {me?.role === 'admin' && (
+            <IconButton
+              icon="trash"
+              label={`Supprimer le compte de ${u.displayName}`}
+              className="text-danger"
+              onClick={() => setDeleting(true)}
+            />
+          )}
         </div>
       )}
+      {deleting && <DeleteAccountDialog account={u} onClose={() => setDeleting(false)} />}
       {confirm && (
         <DecisionDialog
           open
@@ -198,5 +217,69 @@ function UserRow({ account: u }: { account: AdminUserDto }) {
         />
       )}
     </li>
+  );
+}
+
+/** Suppression définitive : on retape le pseudo pour confirmer (action irréversible). */
+function DeleteAccountDialog({
+  account: u,
+  onClose,
+}: {
+  account: AdminUserDto;
+  onClose: () => void;
+}) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [typed, setTyped] = useState('');
+  const [note, setNote] = useState('');
+  const del = useMutation({
+    mutationFn: () => adminApi.deleteUser(u.userId, note.trim() || undefined),
+    onSuccess: () => {
+      toast.success(`Compte de ${u.displayName} supprimé.`);
+      void qc.invalidateQueries({ queryKey: ['admin'] });
+      onClose();
+    },
+    onError: (e) => toast.error(errorMessage(e)),
+  });
+  const ok = typed.trim().replace(/^@/, '').toLowerCase() === u.username.toLowerCase();
+  return (
+    <Modal
+      open
+      onClose={onClose}
+      title={`Supprimer le compte de ${u.displayName} ?`}
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button variant="danger" busy={del.isPending} disabled={!ok} onClick={() => del.mutate()}>
+            Supprimer définitivement
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <p className="text-muted">
+          Le compte <strong className="text-fg">{u.email}</strong> et toutes ses données (livres,
+          chapitres, messages, amis, lectures) seront effacés.{' '}
+          <strong className="text-fg">Cette action est irréversible.</strong> L’adresse e-mail et le
+          pseudo redeviendront disponibles.
+        </p>
+        <TextField
+          label={`Pour confirmer, tapez le pseudo « ${u.username} »`}
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          autoComplete="off"
+          autoFocus
+        />
+        <TextArea
+          label="Note pour le journal (facultatif)"
+          rows={2}
+          maxLength={500}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
+    </Modal>
   );
 }

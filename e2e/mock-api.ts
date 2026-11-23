@@ -240,6 +240,26 @@ export async function mockApi(
         });
       case 'POST /admin/reports/01900000-0000-7000-8000-0000000000r1/resolve':
         return route.fulfill({ status: 204 });
+      case 'GET /admin/users':
+        return json(route, {
+          items: [
+            {
+              userId: '01900000-0000-7000-8000-000000000003',
+              username: 'hugo',
+              displayName: 'Hugo',
+              avatarUrl: null,
+              email: 'hugo@exemple.fr',
+              role: 'user',
+              status: 'active',
+              emailVerified: false,
+              createdAt: '2026-01-03T00:00:00.000Z',
+              bookCount: 0,
+            },
+          ],
+          nextCursor: null,
+        });
+      case 'DELETE /admin/users/01900000-0000-7000-8000-000000000003':
+        return route.fulfill({ status: 204 });
       case 'GET /catalog/genres':
         return json(route, [{ genre: 'roman', count: 1 }]);
       default:

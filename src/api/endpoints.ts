@@ -232,6 +232,8 @@ export const adminApi = {
     api<void>(`/admin/users/${id}/reinstate`, { method: 'POST', body: { reason } }),
   setRole: (id: string, role: UserRole) =>
     api<void>(`/admin/users/${id}/role`, { method: 'PATCH', body: { role } }),
+  deleteUser: (id: string, reason?: string) =>
+    api<void>(`/admin/users/${id}`, { method: 'DELETE', body: { reason } }),
   actions: (cursor?: string | null) =>
     api<Paginated<ModerationActionDto>>(`/admin/actions${q({ cursor })}`),
 };
